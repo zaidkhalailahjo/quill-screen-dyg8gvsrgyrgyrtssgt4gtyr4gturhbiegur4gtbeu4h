@@ -7,14 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* الألوان الرئيسية المتناسقة مع هويتك */
+            /* الألوان الرئيسية المتناسقة مع هوية نظامك */
             --primary: #002d74;
             --secondary: #00839b;
             --bg-color: #0b1120;
-            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-bg: rgba(15, 23, 42, 0.65);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --skin: #ffedd5;
+            --skin: #fcd34d; /* لون بشرة أكثر حيوية */
+            --hoodie: #1e293b; /* لون سترة المبرمج */
         }
 
         * {
@@ -32,127 +33,167 @@
             align-items: center;
             overflow: hidden;
             position: relative;
-            cursor: none; /* إخفاء الماوس الافتراضي */
+            cursor: none; /* إخفاء الماوس الافتراضي للكمبيوتر */
         }
 
-        a, button {
-            cursor: pointer; /* إبقاء المؤشر العادي للروابط والأزرار إن وجدت */
-        }
-
-        /* تصميم الماوس الجديد (BellaBot) */
-        .bellabot-cursor {
-            width: 45px;
-            height: auto;
-            content: url('https://sebotics.com/wp-content/uploads/2022/12/BellaBot-mobile-209x300.webp');
+        /* قائمة اختيار الماوس الزجاجية */
+        .cursor-selector-container {
             position: fixed;
-            pointer-events: none;
+            top: 20px;
+            left: 20px;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cursor-label {
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .cursor-select {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--secondary);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer; /* السماح للمؤشر العادي بالظهور هنا لتسهيل الاختيار */
+            box-shadow: 0 4px 15px rgba(0, 131, 155, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .cursor-select:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .cursor-select option {
+            background: #0f172a;
+            color: white;
+        }
+
+        /* تصميم الماوس الجديد */
+        .custom-cursor {
+            width: 40px;
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center top;
+            position: fixed;
+            pointer-events: none; /* لكي لا يعيق النقر */
             z-index: 99999;
             transform: translate(-50%, -10%);
-            transition: transform 0.1s ease-out;
+            transition: width 0.3s, height 0.3s, transform 0.1s ease-out;
             will-change: left, top, transform;
+            filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.5)); /* ظل ليعطي واقعية */
         }
 
-        body:active .bellabot-cursor {
-            transform: translate(-50%, -10%) scale(0.85); /* حركة عند النقر */
+        body:active .custom-cursor {
+            transform: translate(-50%, -10%) scale(0.85); /* تصغير عند النقر */
         }
 
-        /* الخلفية المتحركة (Glowing Orbs) */
+        /* إخفاء الماوس المخصص في الجوالات وشاشات اللمس وإرجاع الماوس العادي */
+        @media (hover: none) and (pointer: coarse) {
+            body { cursor: auto; }
+            .custom-cursor { display: none !important; }
+        }
+
+        /* الأزرار والروابط تظهر الماوس العادي أو اليد لتسهيل النقر */
+        select { cursor: pointer; }
+
+        /* الخلفية المتحركة */
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.5;
-            animation: float 10s infinite alternate ease-in-out;
+            filter: blur(90px);
+            opacity: 0.4;
+            animation: float 12s infinite alternate ease-in-out;
             z-index: -1;
         }
 
         .orb-1 {
-            width: 400px;
-            height: 400px;
+            width: 450px;
+            height: 450px;
             background: var(--primary);
             top: -100px;
             right: -100px;
         }
 
         .orb-2 {
-            width: 300px;
-            height: 300px;
+            width: 350px;
+            height: 350px;
             background: var(--secondary);
             bottom: -50px;
             left: -50px;
-            animation-delay: -5s;
+            animation-delay: -6s;
         }
 
         @keyframes float {
             0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 50px) scale(1.2); }
+            100% { transform: translate(40px, 60px) scale(1.1); }
         }
 
         /* حاوية البطاقة الزجاجية */
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            padding: 40px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 50px 40px;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            width: 90%;
-            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            width: 92%;
+            max-width: 650px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* إعدادات الرسوم المتحركة SVG */
+        /* إعدادات الأنميشن المحسنة SVG */
         .svg-container {
             width: 100%;
-            max-width: 400px;
-            margin-bottom: 20px;
+            max-width: 450px;
+            margin-bottom: 25px;
         }
 
-        /* حركات الأنميشن */
         .arm-group {
-            transform-origin: 270px 180px;
-            animation: armAction 9s infinite ease-in-out;
+            transform-origin: 275px 175px;
+            animation: armAction 9s infinite cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .head-group {
-            transform-origin: 285px 130px;
-            animation: headAction 9s infinite ease-in-out;
+            transform-origin: 285px 125px;
+            animation: headAction 9s infinite cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .hand-cup {
-            animation: handCupToggle 9s infinite;
-        }
+        .hand-cup { animation: handCupToggle 9s infinite; }
+        .table-cup { animation: tableCupToggle 9s infinite; }
+        .steam { animation: steamRise 2.5s infinite ease-out; }
+        .steam-2 { animation-delay: 1.2s; }
+        .screen-glow { animation: pulseGlow 4s infinite alternate; }
+        .logo-glow { animation: pulseLogo 3s infinite alternate; }
+        .typing-finger { animation: typingFingers 0.5s infinite alternate; }
 
-        .table-cup {
-            animation: tableCupToggle 9s infinite;
-        }
-
-        .steam {
-            animation: steamRise 2s infinite ease-out;
-        }
-
-        .steam-2 { animation-delay: 1s; }
-
-        .screen-glow {
-            animation: pulseGlow 3s infinite alternate;
-        }
-
-        /* تفاصيل إطارات الحركة (Keyframes) */
         @keyframes armAction {
-            0%, 20% { transform: rotate(-8deg); } 
-            25%, 35% { transform: rotate(0deg); } 
-            45%, 55% { transform: rotate(-70deg); } 
-            65%, 75% { transform: rotate(0deg); } 
-            80%, 100% { transform: rotate(-8deg); } 
+            0%, 20% { transform: rotate(-10deg); } /* طباعة */
+            25%, 35% { transform: rotate(5deg); } /* إمساك الكوب */
+            45%, 55% { transform: rotate(-75deg); } /* الشرب */
+            65%, 75% { transform: rotate(5deg); } /* إرجاع الكوب */
+            80%, 100% { transform: rotate(-10deg); } /* عودة للطباعة */
         }
 
         @keyframes headAction {
             0%, 40% { transform: rotate(0deg); }
-            45%, 55% { transform: rotate(-12deg) translate(-3px, 3px); } 
+            45%, 55% { transform: rotate(-15deg) translate(-5px, 5px); } /* إمالة الرأس */
             60%, 100% { transform: rotate(0deg); }
         }
 
@@ -170,22 +211,31 @@
 
         @keyframes steamRise {
             0% { opacity: 0; transform: translateY(0) scale(0.8); }
-            50% { opacity: 0.7; }
-            100% { opacity: 0; transform: translateY(-20px) scale(1.2); }
+            40% { opacity: 0.6; }
+            100% { opacity: 0; transform: translateY(-25px) scale(1.3); }
         }
 
         @keyframes pulseGlow {
-            0% { fill: #bae6fd; filter: drop-shadow(0 0 5px var(--secondary)); }
-            100% { fill: #e0f2fe; filter: drop-shadow(0 0 15px var(--secondary)); }
+            0% { fill: rgba(186, 230, 253, 0.8); filter: drop-shadow(0 0 10px var(--secondary)); }
+            100% { fill: rgba(224, 242, 254, 1); filter: drop-shadow(0 0 25px var(--secondary)); }
         }
 
-        /* النصوص والتنسيقات */
+        @keyframes pulseLogo {
+            0% { fill: #38bdf8; filter: drop-shadow(0 0 5px #38bdf8); }
+            100% { fill: #fff; filter: drop-shadow(0 0 15px #fff); }
+        }
+
+        @keyframes typingFingers {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-3px); }
+        }
+
+        /* النصوص */
         h1 {
             color: var(--text-main);
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
+            margin-bottom: 12px;
         }
 
         .dots::after {
@@ -202,130 +252,205 @@
 
         p {
             color: var(--text-muted);
-            font-size: 16px;
-            font-weight: 400;
-            line-height: 1.6;
+            font-size: 17px;
+            line-height: 1.7;
         }
 
         .badge {
-            background: rgba(0, 131, 155, 0.2);
-            color: #38bdf8;
-            padding: 6px 16px;
+            background: linear-gradient(45deg, rgba(0, 131, 155, 0.3), rgba(0, 45, 116, 0.5));
+            color: #7dd3fc;
+            padding: 8px 20px;
             border-radius: 50px;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0, 131, 155, 0.3);
+            font-size: 14px;
+            font-weight: 900;
+            margin-bottom: 25px;
+            border: 1px solid rgba(125, 211, 252, 0.3);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
 
-    <!-- مؤشر الماوس الجديد -->
-    <div class="bellabot-cursor"></div>
+    <!-- الماوس المخصص -->
+    <div class="custom-cursor" id="customCursor"></div>
+
+    <!-- قائمة اختيار الماوس -->
+    <div class="cursor-selector-container">
+        <label for="cursorSelect" class="cursor-label">مؤشر الماوس:</label>
+        <select id="cursorSelect" class="cursor-select">
+            <!-- الصور التي طلبتها -->
+            <option value="https://sebotics.com/wp-content/uploads/2022/12/BellaBot-mobile-209x300.webp" data-w="40px" data-h="55px">BellaBot (افتراضي)</option>
+            <option value="https://hro.com.kw/wp-content/uploads/2022/02/09-401x1024.png" data-w="30px" data-h="70px">KettyBot</option>
+            <option value="https://linguacoffee.com/wp-content/uploads/2021/07/%D9%83%D8%A7%D8%A8%D8%AA%D8%B4%D9%8A%D9%86%D9%88.jpg" data-w="45px" data-h="45px" data-br="50%">كوب كابتشينو</option>
+            
+            <!-- إضافات إبداعية (باستخدام تقنية SVG Data URI المدمجة والسريعة) -->
+            <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' style='font-size:32px'><text y='32'>🚀</text></svg>" data-w="40px" data-h="40px">صاروخ الإنجاز</option>
+            <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' style='font-size:32px'><text y='32'>💻</text></svg>" data-w="40px" data-h="40px">لابتوب مبرمج</option>
+            <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' style='font-size:32px'><text y='32'>🤖</text></svg>" data-w="40px" data-h="40px">روبوت ذكي</option>
+            <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' style='font-size:32px'><text y='32'>⚙️</text></svg>" data-w="40px" data-h="40px">ترس النظام</option>
+            <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' style='font-size:32px'><text y='32'>✨</text></svg>" data-w="40px" data-h="40px">شرارة إبداع</option>
+            <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' style='font-size:32px'><text y='32'>🛠️</text></svg>" data-w="40px" data-h="40px">أدوات الصيانة</option>
+        </select>
+    </div>
 
     <!-- الخلفية المتحركة -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
     <div class="glass-card">
-        <div class="badge">تحديث النظام</div>
+        <div class="badge">جاري تحديث النظام ⚙️</div>
         
         <div class="svg-container">
+            <!-- التصميم الجديد والمحسن للشخص واللابتوب -->
             <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-                <!-- الطاولة -->
-                <rect x="30" y="260" width="340" height="6" fill="#475569" rx="3"/>
-                <rect x="50" y="266" width="300" height="34" fill="#334155" />
+                
+                <!-- تفاصيل الطاولة المضيئة -->
+                <rect x="20" y="260" width="360" height="8" fill="#1e293b" rx="4"/>
+                <rect x="30" y="268" width="340" height="30" fill="#0f172a" />
+                <line x1="25" y1="260" x2="375" y2="260" stroke="#00839b" stroke-width="2" opacity="0.5" /> <!-- خط نيون للطاولة -->
 
-                <!-- اللابتوب -->
+                <!-- اللابتوب (تصميم أحدث) -->
                 <g class="laptop">
                     <!-- ظهر الشاشة -->
-                    <path d="M 80 260 L 160 260 L 140 160 L 70 160 Z" fill="#1e293b" />
+                    <path d="M 75 260 L 165 260 L 140 150 L 60 150 Z" fill="#0f172a" stroke="#334155" stroke-width="2"/>
                     <!-- الشاشة المضيئة -->
-                    <path d="M 75 165 L 135 165 L 150 255 L 85 255 Z" class="screen-glow" />
-                    <!-- أكواد برمجية على الشاشة -->
-                    <line x1="88" y1="180" x2="125" y2="180" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
-                    <line x1="90" y1="195" x2="115" y2="195" stroke="var(--secondary)" stroke-width="3" stroke-linecap="round"/>
-                    <line x1="93" y1="210" x2="130" y2="210" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
-                    <line x1="95" y1="225" x2="120" y2="225" stroke="var(--secondary)" stroke-width="3" stroke-linecap="round"/>
-                    <!-- قاعدة اللابتوب -->
-                    <path d="M 50 260 h 120 v 5 a 3 3 0 0 1 -3 3 h -114 a 3 3 0 0 1 -3 -3 z" fill="#64748b" />
+                    <path d="M 70 155 L 135 155 L 155 255 L 85 255 Z" class="screen-glow" />
+                    <!-- شعار مضيء خلف الشاشة -->
+                    <circle cx="105" cy="205" r="8" fill="#fff" class="logo-glow" opacity="0.8"/>
+                    
+                    <!-- أكواد برمجية على الشاشة المضيئة -->
+                    <line x1="85" y1="175" x2="125" y2="175" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="88" y1="190" x2="115" y2="190" stroke="var(--secondary)" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="91" y1="205" x2="130" y2="205" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="94" y1="220" x2="120" y2="220" stroke="var(--secondary)" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="97" y1="235" x2="110" y2="235" stroke="#fcd34d" stroke-width="4" stroke-linecap="round"/>
+                    
+                    <!-- قاعدة اللابتوب النحيفة -->
+                    <path d="M 40 260 h 135 v 4 a 4 4 0 0 1 -4 4 h -127 a 4 4 0 0 1 -4 -4 z" fill="#475569" />
+                    <rect x="70" y="260" width="70" height="3" fill="#94a3b8" /> <!-- لوحة التتبع -->
                 </g>
 
-                <!-- كوب الطاولة (الثابت) -->
+                <!-- كوب الطاولة (Starbucks-style) -->
                 <g class="table-cup">
-                    <!-- البخار -->
-                    <path d="M 180 220 Q 185 205 180 190" stroke="#94a3b8" fill="none" stroke-width="2" stroke-linecap="round" class="steam steam-1" />
-                    <path d="M 190 225 Q 195 210 190 195" stroke="#94a3b8" fill="none" stroke-width="2" stroke-linecap="round" class="steam steam-2" />
-                    <!-- الكوب -->
-                    <rect x="175" y="230" width="20" height="30" fill="var(--secondary)" rx="3" />
-                    <!-- مقبض الكوب -->
-                    <path d="M 195 235 a 8 8 0 0 1 0 20" fill="none" stroke="var(--secondary)" stroke-width="4" stroke-linecap="round"/>
+                    <!-- البخار المحسن -->
+                    <path d="M 185 215 Q 195 195 180 175" stroke="rgba(255,255,255,0.4)" fill="none" stroke-width="3" stroke-linecap="round" class="steam steam-1" filter="blur(1px)"/>
+                    <path d="M 195 220 Q 205 200 190 180" stroke="rgba(255,255,255,0.4)" fill="none" stroke-width="3" stroke-linecap="round" class="steam steam-2" filter="blur(1px)"/>
+                    
+                    <!-- جسم الكوب -->
+                    <path d="M 175 225 L 180 260 L 205 260 L 210 225 Z" fill="#f8fafc" />
+                    <!-- غطاء الكوب (لون أزرق ثانوي) -->
+                    <rect x="172" y="220" width="41" height="8" fill="var(--secondary)" rx="4"/>
+                    <rect x="185" y="215" width="15" height="5" fill="var(--secondary)" rx="2"/>
+                    <!-- شعار على الكوب -->
+                    <circle cx="192" cy="242" r="6" fill="var(--primary)"/>
                 </g>
 
-                <!-- الشخص -->
-                <!-- الجسم -->
-                <path d="M 230 260 C 230 160, 360 160, 360 260 Z" fill="var(--primary)" />
-                <!-- الرقبة -->
-                <rect x="275" y="125" width="20" height="35" fill="var(--skin)" />
+                <!-- الشخص (المبرمج بالسترة - Hoodie) -->
+                <!-- الجسم / السترة -->
+                <path d="M 220 260 C 220 150, 370 150, 370 260 Z" fill="var(--hoodie)" />
+                <!-- تفاصيل السترة (الجيب والخطوط) -->
+                <path d="M 270 260 Q 295 220 320 260" fill="none" stroke="#0f172a" stroke-width="4"/>
+                <path d="M 285 155 Q 295 180 305 155" fill="none" stroke="#0f172a" stroke-width="2"/> <!-- قبعة السترة -->
 
-                <!-- الرأس (يتحرك عند الشرب) -->
+                <!-- الرقبة -->
+                <rect x="280" y="125" width="20" height="35" fill="var(--skin)" />
+                <!-- ظل الرقبة -->
+                <rect x="280" y="125" width="8" height="35" fill="rgba(0,0,0,0.15)" />
+
+                <!-- الرأس المتحرك -->
                 <g class="head-group">
                     <!-- الوجه -->
-                    <circle cx="285" cy="105" r="35" fill="var(--skin)" />
-                    <!-- الشعر -->
-                    <path d="M 245 105 C 245 45, 330 45, 330 105 C 330 75, 245 75, 245 105 Z" fill="#0f172a" />
-                    <path d="M 315 85 C 335 100, 335 125, 315 135" fill="#0f172a" />
-                    <!-- النظارات -->
-                    <rect x="255" y="95" width="18" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="#1e293b" stroke-width="2"/>
-                    <rect x="277" y="95" width="18" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="#1e293b" stroke-width="2"/>
-                    <line x1="273" y1="101" x2="277" y2="101" stroke="#1e293b" stroke-width="2"/>
-                    <line x1="295" y1="101" x2="315" y2="95" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="290" cy="105" r="35" fill="var(--skin)" />
+                    <!-- الشعر الحديث -->
+                    <path d="M 250 105 C 245 35, 335 35, 335 105 C 335 70, 250 70, 250 105 Z" fill="#0f172a" />
+                    <path d="M 320 85 C 345 100, 345 130, 320 145" fill="#0f172a" /> <!-- شعر من الخلف -->
+                    <path d="M 255 85 Q 275 60 290 85" fill="none" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/> <!-- خصلة -->
+
+                    <!-- سماعات الرأس (Headphones) -->
+                    <path d="M 255 105 A 38 38 0 0 1 325 105" fill="none" stroke="#334155" stroke-width="6" /> <!-- طوق السماعة -->
+                    <rect x="245" y="90" width="12" height="30" rx="6" fill="var(--primary)" /> <!-- السماعة اليسرى -->
+                    <rect x="323" y="90" width="12" height="30" rx="6" fill="var(--primary)" /> <!-- السماعة اليمنى -->
+                    
+                    <!-- النظارات (Sleek Glasses) -->
+                    <rect x="260" y="95" width="18" height="12" rx="4" fill="rgba(255,255,255,0.3)" stroke="#1e293b" stroke-width="2"/>
+                    <rect x="284" y="95" width="18" height="12" rx="4" fill="rgba(255,255,255,0.3)" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="278" y1="101" x2="284" y2="101" stroke="#1e293b" stroke-width="2"/>
+                    <!-- ذراع النظارة -->
+                    <line x1="302" y1="100" x2="325" y2="95" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
                 </g>
 
                 <!-- الذراع اليسرى الثابتة (للطباعة) -->
-                <path d="M 315 180 Q 290 240 210 250" stroke="#001c4a" stroke-width="18" stroke-linecap="round" fill="none" />
+                <path d="M 325 170 Q 300 240 220 245" stroke="#0f172a" stroke-width="22" stroke-linecap="round" fill="none" />
+                <circle cx="210" cy="245" r="10" fill="var(--skin)" class="typing-finger"/> <!-- حركة أصابع -->
 
-                <!-- الذراع اليمنى المتحركة -->
+                <!-- الذراع اليمنى المتحركة (بشكل أفضل) -->
                 <g class="arm-group">
-                    <!-- الكُم -->
-                    <path d="M 270 180 Q 230 255 185 245" stroke="var(--primary)" stroke-width="20" stroke-linecap="round" fill="none" />
-                    <!-- اليد -->
-                    <circle cx="175" cy="242" r="12" fill="var(--skin)" />
+                    <!-- كُم السترة -->
+                    <path d="M 280 175 Q 230 255 195 240" stroke="var(--primary)" stroke-width="24" stroke-linecap="round" fill="none" />
+                    <!-- خط تجعيدة في الكُم -->
+                    <path d="M 260 205 L 245 220" stroke="rgba(0,0,0,0.2)" stroke-width="3" stroke-linecap="round" />
                     
-                    <!-- الكوب داخل اليد (يظهر عند الإمساك به) -->
+                    <!-- اليد -->
+                    <circle cx="185" cy="235" r="12" fill="var(--skin)" />
+                    
+                    <!-- الكوب داخل اليد (نفس تصميم الكوب على الطاولة) -->
                     <g class="hand-cup">
-                        <rect x="165" y="215" width="20" height="30" fill="var(--secondary)" rx="3" />
-                        <path d="M 185 220 a 8 8 0 0 1 0 20" fill="none" stroke="var(--secondary)" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 175 205 L 180 240 L 205 240 L 210 205 Z" fill="#f8fafc" />
+                        <rect x="172" y="200" width="41" height="8" fill="var(--secondary)" rx="4"/>
+                        <rect x="185" y="195" width="15" height="5" fill="var(--secondary)" rx="2"/>
+                        <circle cx="192" cy="222" r="6" fill="var(--primary)"/>
                     </g>
                 </g>
             </svg>
         </div>
 
         <h1>جاري العمل على النظام<span class="dots"></span></h1>
-        <p>نحن نقوم الآن بتحضير كوب من القهوة وكتابة أسطر برمجية جديدة لتحسين تجربتكم. النظام سيكون متاحاً قريباً جداً.</p>
+        <p>نحن نقوم الآن بشرب كوب من القهوة الساخنة وكتابة أسطر برمجية جديدة لتحسين تجربتكم. النظام سيكون متاحاً قريباً جداً.</p>
     </div>
 
-    <!-- سكربت التحكم بحركة الماوس -->
+    <!-- سكربت التحكم بالماوس -->
     <script>
-        const bellaCursor = document.querySelector('.bellabot-cursor');
+        const cursorEl = document.getElementById('customCursor');
+        const selectEl = document.getElementById('cursorSelect');
+
+        // وظيفة تحديث الماوس بناءً على الاختيار
+        function updateCursor() {
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const imageUrl = selectEl.value;
+            const width = selectedOption.getAttribute('data-w') || '40px';
+            const height = selectedOption.getAttribute('data-h') || '40px';
+            const borderRadius = selectedOption.getAttribute('data-br') || '0%';
+
+            cursorEl.style.backgroundImage = `url('${imageUrl}')`;
+            cursorEl.style.width = width;
+            cursorEl.style.height = height;
+            cursorEl.style.borderRadius = borderRadius; // جعل صورة القهوة دائرية إذا لزم الأمر
+        }
+
+        // الاستماع لتغيير القائمة المنسدلة
+        selectEl.addEventListener('change', updateCursor);
+        
+        // تشغيل الوظيفة أول مرة لضبط الماوس الافتراضي
+        updateCursor();
 
         // جعل الروبوت يتحرك مع إحداثيات الماوس الحقيقية
         document.addEventListener('mousemove', (e) => {
-            bellaCursor.style.left = e.clientX + 'px';
-            bellaCursor.style.top = e.clientY + 'px';
+            cursorEl.style.left = e.clientX + 'px';
+            cursorEl.style.top = e.clientY + 'px';
         });
 
         // إخفاء الروبوت إذا خرج الماوس خارج شاشة المتصفح
         document.addEventListener('mouseleave', () => {
-            bellaCursor.style.display = 'none';
+            cursorEl.style.display = 'none';
         });
 
         // إعادته عند عودة الماوس
         document.addEventListener('mouseenter', () => {
-            bellaCursor.style.display = 'block';
+            // تحقق إذا كان الجهاز لا يدعم الـ Hover (مثل الجوال) لا تظهر الماوس المخصص
+            if (window.matchMedia("(hover: hover)").matches) {
+                cursorEl.style.display = 'block';
+            }
         });
     </script>
 </body>
