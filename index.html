@@ -4,133 +4,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري العمل على النظام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #00839b;
-            --secondary-color: #002d74;
-            --bg-gradient: linear-gradient(135deg, #002d74 0%, #00839b 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
+            /* الألوان الرئيسية المتناسقة مع هويتك */
+            --primary: #002d74;
+            --secondary: #00839b;
+            --bg-color: #0b1120;
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --skin: #ffedd5;
         }
 
-        body, html {
+        * {
             margin: 0;
             padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: var(--bg-gradient);
             overflow: hidden;
-            color: white;
-        }
-
-        .container {
-            text-align: center;
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            padding: 50px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 45px rgba(0,0,0,0.2);
-            max-width: 400px;
-            width: 90%;
-        }
-
-        /* أنميشن الشخص الذي يركض */
-        .loader-wrapper {
             position: relative;
-            height: 100px;
-            margin-bottom: 30px;
         }
 
-        .runner {
+        /* الخلفية المتحركة (Glowing Orbs) */
+        .orb {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .runner div {
-            width: 20px;
-            height: 20px;
-            background: #fff;
             border-radius: 50%;
-            position: absolute;
-            animation: run 0.8s infinite ease-in-out;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: float 10s infinite alternate ease-in-out;
+            z-index: -1;
         }
 
-        /* تمثيل بسيط لجسم يتحرك */
-        .runner .head { top: -25px; left: 0; }
-        .runner .body { top: 0; left: 0; height: 35px; border-radius: 10px; }
-        
-        @keyframes run {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            top: -100px;
+            right: -100px;
         }
 
-        /* نيون بار Progress */
-        .progress-bar {
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.2); }
+        }
+
+        /* حاوية البطاقة الزجاجية */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* إعدادات الرسوم المتحركة SVG */
+        .svg-container {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-            position: relative;
+            max-width: 400px;
+            margin-bottom: 20px;
         }
 
-        .progress-fill {
-            width: 50%;
-            height: 100%;
-            background: #fff;
-            box-shadow: 0 0 15px #fff;
-            border-radius: 10px;
-            animation: loading 2s infinite ease-in-out;
+        /* حركات الأنميشن */
+        .arm-group {
+            transform-origin: 270px 180px;
+            animation: armAction 9s infinite ease-in-out;
         }
 
-        @keyframes loading {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+        .head-group {
+            transform-origin: 285px 130px;
+            animation: headAction 9s infinite ease-in-out;
         }
 
+        .hand-cup {
+            animation: handCupToggle 9s infinite;
+        }
+
+        .table-cup {
+            animation: tableCupToggle 9s infinite;
+        }
+
+        .steam {
+            animation: steamRise 2s infinite ease-out;
+        }
+
+        .steam-2 { animation-delay: 1s; }
+
+        .screen-glow {
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        /* تفاصيل إطارات الحركة (Keyframes) */
+        @keyframes armAction {
+            0%, 20% { transform: rotate(-8deg); } /* طباعة على الكيبورد */
+            25%, 35% { transform: rotate(0deg); } /* الإمساك بالكوب */
+            45%, 55% { transform: rotate(-70deg); } /* الشرب */
+            65%, 75% { transform: rotate(0deg); } /* إعادة الكوب */
+            80%, 100% { transform: rotate(-8deg); } /* العودة للطباعة */
+        }
+
+        @keyframes headAction {
+            0%, 40% { transform: rotate(0deg); }
+            45%, 55% { transform: rotate(-12deg) translate(-3px, 3px); } /* إمالة الرأس للشرب */
+            60%, 100% { transform: rotate(0deg); }
+        }
+
+        @keyframes handCupToggle {
+            0%, 25% { opacity: 0; }
+            26%, 74% { opacity: 1; }
+            75%, 100% { opacity: 0; }
+        }
+
+        @keyframes tableCupToggle {
+            0%, 25% { opacity: 1; }
+            26%, 74% { opacity: 0; }
+            75%, 100% { opacity: 1; }
+        }
+
+        @keyframes steamRise {
+            0% { opacity: 0; transform: translateY(0) scale(0.8); }
+            50% { opacity: 0.7; }
+            100% { opacity: 0; transform: translateY(-20px) scale(1.2); }
+        }
+
+        @keyframes pulseGlow {
+            0% { fill: #bae6fd; filter: drop-shadow(0 0 5px var(--secondary)); }
+            100% { fill: #e0f2fe; filter: drop-shadow(0 0 15px var(--secondary)); }
+        }
+
+        /* النصوص والتنسيقات */
         h1 {
-            font-size: 1.8rem;
+            color: var(--text-main);
+            font-size: 28px;
+            font-weight: 900;
             margin-bottom: 10px;
-            font-weight: 300;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+        }
+
+        .dots::after {
+            content: '';
+            animation: typingDots 2s infinite steps(4, end);
+        }
+
+        @keyframes typingDots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
         }
 
         p {
-            opacity: 0.8;
-            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.6;
         }
 
-        /* إضافة لمسة جمالية للخلفية */
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: -1;
+        .badge {
+            background: rgba(0, 131, 155, 0.2);
+            color: #38bdf8;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 131, 155, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <!-- عناصر خلفية للزينة -->
-    <div class="circle" style="width: 300px; height: 300px; top: -100px; right: -50px;"></div>
-    <div class="circle" style="width: 200px; height: 200px; bottom: -50px; left: -30px;"></div>
+    <!-- الخلفية المتحركة -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
-    <div class="container">
-        <div class="loader-wrapper">
-            <!-- شكل رمز تعبيري أو SVG بسيط كشخص يتحرك -->
-            <div style="font-size: 50px; animation: run 0.6s infinite alternate;">🏃‍♂️</div>
-        </div>
+    <div class="glass-card">
+        <div class="badge">تحديث النظام</div>
         
-        <h1>جاري العمل على النظام</h1>
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
+        <div class="svg-container">
+            <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                <!-- الطاولة -->
+                <rect x="30" y="260" width="340" height="6" fill="#475569" rx="3"/>
+                <rect x="50" y="266" width="300" height="34" fill="#334155" />
+
+                <!-- اللابتوب -->
+                <g class="laptop">
+                    <!-- ظهر الشاشة -->
+                    <path d="M 80 260 L 160 260 L 140 160 L 70 160 Z" fill="#1e293b" />
+                    <!-- الشاشة المضيئة -->
+                    <path d="M 75 165 L 135 165 L 150 255 L 85 255 Z" class="screen-glow" />
+                    <!-- أكواد برمجية على الشاشة -->
+                    <line x1="88" y1="180" x2="125" y2="180" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="90" y1="195" x2="115" y2="195" stroke="var(--secondary)" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="93" y1="210" x2="130" y2="210" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="95" y1="225" x2="120" y2="225" stroke="var(--secondary)" stroke-width="3" stroke-linecap="round"/>
+                    <!-- قاعدة اللابتوب -->
+                    <path d="M 50 260 h 120 v 5 a 3 3 0 0 1 -3 3 h -114 a 3 3 0 0 1 -3 -3 z" fill="#64748b" />
+                </g>
+
+                <!-- كوب الطاولة (الثابت) -->
+                <g class="table-cup">
+                    <!-- البخار -->
+                    <path d="M 180 220 Q 185 205 180 190" stroke="#94a3b8" fill="none" stroke-width="2" stroke-linecap="round" class="steam steam-1" />
+                    <path d="M 190 225 Q 195 210 190 195" stroke="#94a3b8" fill="none" stroke-width="2" stroke-linecap="round" class="steam steam-2" />
+                    <!-- الكوب -->
+                    <rect x="175" y="230" width="20" height="30" fill="var(--secondary)" rx="3" />
+                    <!-- مقبض الكوب -->
+                    <path d="M 195 235 a 8 8 0 0 1 0 20" fill="none" stroke="var(--secondary)" stroke-width="4" stroke-linecap="round"/>
+                </g>
+
+                <!-- الشخص -->
+                <!-- الجسم -->
+                <path d="M 230 260 C 230 160, 360 160, 360 260 Z" fill="var(--primary)" />
+                <!-- الرقبة -->
+                <rect x="275" y="125" width="20" height="35" fill="var(--skin)" />
+
+                <!-- الرأس (يتحرك عند الشرب) -->
+                <g class="head-group">
+                    <!-- الوجه -->
+                    <circle cx="285" cy="105" r="35" fill="var(--skin)" />
+                    <!-- الشعر -->
+                    <path d="M 245 105 C 245 45, 330 45, 330 105 C 330 75, 245 75, 245 105 Z" fill="#0f172a" />
+                    <path d="M 315 85 C 335 100, 335 125, 315 135" fill="#0f172a" />
+                    <!-- النظارات -->
+                    <rect x="255" y="95" width="18" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="#1e293b" stroke-width="2"/>
+                    <rect x="277" y="95" width="18" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="273" y1="101" x2="277" y2="101" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="295" y1="101" x2="315" y2="95" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+                </g>
+
+                <!-- الذراع اليسرى الثابتة (للطباعة) -->
+                <path d="M 315 180 Q 290 240 210 250" stroke="#001c4a" stroke-width="18" stroke-linecap="round" fill="none" />
+
+                <!-- الذراع اليمنى المتحركة -->
+                <g class="arm-group">
+                    <!-- الكُم -->
+                    <path d="M 270 180 Q 230 255 185 245" stroke="var(--primary)" stroke-width="20" stroke-linecap="round" fill="none" />
+                    <!-- اليد -->
+                    <circle cx="175" cy="242" r="12" fill="var(--skin)" />
+                    
+                    <!-- الكوب داخل اليد (يظهر عند الإمساك به) -->
+                    <g class="hand-cup">
+                        <rect x="165" y="215" width="20" height="30" fill="var(--secondary)" rx="3" />
+                        <path d="M 185 220 a 8 8 0 0 1 0 20" fill="none" stroke="var(--secondary)" stroke-width="4" stroke-linecap="round"/>
+                    </g>
+                </g>
+            </svg>
         </div>
-        <p>نحن نقوم بتحسين تجربتك، سنكون جاهزين قريباً.</p>
+
+        <h1>جاري العمل على النظام<span class="dots"></span></h1>
+        <p>نحن نقوم الآن بتحضير كوب من القهوة وكتابة أسطر برمجية جديدة لتحسين تجربتكم. النظام سيكون متاحاً قريباً جداً.</p>
     </div>
 
 </body>
