@@ -32,6 +32,28 @@
             align-items: center;
             overflow: hidden;
             position: relative;
+            cursor: none; /* إخفاء الماوس الافتراضي */
+        }
+
+        a, button {
+            cursor: pointer; /* إبقاء المؤشر العادي للروابط والأزرار إن وجدت */
+        }
+
+        /* تصميم الماوس الجديد (BellaBot) */
+        .bellabot-cursor {
+            width: 45px;
+            height: auto;
+            content: url('https://sebotics.com/wp-content/uploads/2022/12/BellaBot-mobile-209x300.webp');
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-50%, -10%);
+            transition: transform 0.1s ease-out;
+            will-change: left, top, transform;
+        }
+
+        body:active .bellabot-cursor {
+            transform: translate(-50%, -10%) scale(0.85); /* حركة عند النقر */
         }
 
         /* الخلفية المتحركة (Glowing Orbs) */
@@ -121,16 +143,16 @@
 
         /* تفاصيل إطارات الحركة (Keyframes) */
         @keyframes armAction {
-            0%, 20% { transform: rotate(-8deg); } /* طباعة على الكيبورد */
-            25%, 35% { transform: rotate(0deg); } /* الإمساك بالكوب */
-            45%, 55% { transform: rotate(-70deg); } /* الشرب */
-            65%, 75% { transform: rotate(0deg); } /* إعادة الكوب */
-            80%, 100% { transform: rotate(-8deg); } /* العودة للطباعة */
+            0%, 20% { transform: rotate(-8deg); } 
+            25%, 35% { transform: rotate(0deg); } 
+            45%, 55% { transform: rotate(-70deg); } 
+            65%, 75% { transform: rotate(0deg); } 
+            80%, 100% { transform: rotate(-8deg); } 
         }
 
         @keyframes headAction {
             0%, 40% { transform: rotate(0deg); }
-            45%, 55% { transform: rotate(-12deg) translate(-3px, 3px); } /* إمالة الرأس للشرب */
+            45%, 55% { transform: rotate(-12deg) translate(-3px, 3px); } 
             60%, 100% { transform: rotate(0deg); }
         }
 
@@ -200,6 +222,9 @@
     </style>
 </head>
 <body>
+
+    <!-- مؤشر الماوس الجديد -->
+    <div class="bellabot-cursor"></div>
 
     <!-- الخلفية المتحركة -->
     <div class="orb orb-1"></div>
@@ -283,5 +308,25 @@
         <p>نحن نقوم الآن بتحضير كوب من القهوة وكتابة أسطر برمجية جديدة لتحسين تجربتكم. النظام سيكون متاحاً قريباً جداً.</p>
     </div>
 
+    <!-- سكربت التحكم بحركة الماوس -->
+    <script>
+        const bellaCursor = document.querySelector('.bellabot-cursor');
+
+        // جعل الروبوت يتحرك مع إحداثيات الماوس الحقيقية
+        document.addEventListener('mousemove', (e) => {
+            bellaCursor.style.left = e.clientX + 'px';
+            bellaCursor.style.top = e.clientY + 'px';
+        });
+
+        // إخفاء الروبوت إذا خرج الماوس خارج شاشة المتصفح
+        document.addEventListener('mouseleave', () => {
+            bellaCursor.style.display = 'none';
+        });
+
+        // إعادته عند عودة الماوس
+        document.addEventListener('mouseenter', () => {
+            bellaCursor.style.display = 'block';
+        });
+    </script>
 </body>
 </html>
