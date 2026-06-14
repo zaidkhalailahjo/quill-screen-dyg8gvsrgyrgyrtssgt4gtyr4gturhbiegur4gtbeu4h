@@ -117,6 +117,7 @@
         .modal-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
         .btn-secondary { background-color: #1F2A35; color: white; }
         .btn-primary { background-color: #00A878; color: white; }
+        .btn-danger { background-color: #E74C3C; color: white; }
         
         /* Robots List */
         .robots-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
@@ -127,6 +128,7 @@
         .robot-select-item.selected { border-color: #00A878; background-color: rgba(0, 168, 120, 0.1); }
         .robot-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #8899A6; display: flex; align-items: center; justify-content: center; }
         .robot-select-item.selected .robot-checkbox { background-color: #00A878; border-color: #00A878; }
+        .robot-preview-text { font-size: 11px; color: #8899A6; margin-top: 4px; }
 
         /* Menu List */
         .menu-list { display: flex; flex-direction: column; gap: 5px; }
@@ -258,7 +260,21 @@
                 <div class="menu-list">
                     <button class="menu-item" onclick="showPage('favoritesPage'); document.getElementById('mainMenuModal').style.display='none';">⭐ المفضلة</button>
                     <button class="menu-item" onclick="showPage('remoteSelectPage'); document.getElementById('mainMenuModal').style.display='none';">📱 تحكم في الشاشة</button>
-                    <button class="menu-item" onclick="alert('سيتم العمل عليها لاحقاً'); document.getElementById('mainMenuModal').style.display='none';">👤 إضافة حسابات</button>
+                    <button class="menu-item" onclick="showDeviceNameModal(); document.getElementById('mainMenuModal').style.display='none';">👤 إعداد اسم المُرسل</button>
+                    <button class="menu-item" onclick="alert('سيتم العمل عليها لاحقاً'); document.getElementById('mainMenuModal').style.display='none';">👥 إضافة حسابات</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- إعداد اسم المُرسل -->
+        <div id="deviceNameModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>اسم المُرسل (اسم جهازك)</h3>
+                <p style="font-size:12px; color:#8899A6; margin-bottom:10px;">سيظهر هذا الاسم على الشاشة عند استلام الملفات بدلاً من "Web App".</p>
+                <input type="text" id="deviceNameInput" placeholder="مثال: آيفون محمد، أو الإدارة...">
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="document.getElementById('deviceNameModal').style.display='none'">إلغاء</button>
+                    <button class="btn-primary" onclick="saveDeviceName()">حفظ</button>
                 </div>
             </div>
         </div>
@@ -271,6 +287,21 @@
                 <div class="modal-actions">
                     <button class="btn-secondary" onclick="document.getElementById('saveFavModal').style.display='none'">إلغاء</button>
                     <button class="btn-primary" onclick="saveToFavorites()">حفظ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- رسالة التحذير من اختلاف المحتوى -->
+        <div id="mismatchWarningModal" class="modal" style="display: none;">
+            <div class="modal-content text-center">
+                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                <h3 style="color:#E74C3C;">تنبيه: محتوى مختلف!</h3>
+                <p style="margin-bottom:20px; line-height:1.6; color:#8899A6; font-size:14px;">
+                    الشاشات المحددة تعرض حالياً محتويات مختلفة عن بعضها.<br>هل أنت متأكد أنك تريد إرسال هذا المحتوى واستبدال كل ما يعرضونه؟
+                </p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="document.getElementById('mismatchWarningModal').style.display='none'">إلغاء</button>
+                    <button class="btn-danger" onclick="proceedSendToScreens()">متأكد، أرسل</button>
                 </div>
             </div>
         </div>
@@ -387,6 +418,8 @@
                 installMessage.innerText = "لتثبيت التطبيق، اضغط على زر المشاركة بالأسفل ثم اختر 'إضافة إلى الصفحة الرئيسية'.";
                 installModal.style.display = 'flex';
             }
+            
+            checkDeviceName();
             loadScreens();
             loadFavoritesList();
 
@@ -402,7 +435,7 @@
                 if(selectedMedia.length === 0) return alert("القائمة فارغة!");
                 document.getElementById('saveFavModal').style.display = 'flex';
             };
-            document.getElementById('sendBtn').onclick = sendToScreens;
+            document.getElementById('sendBtn').onclick = checkMismatchBeforeSend;
             
             durationSlider.oninput = (e) => {
                 durationLabel.innerText = e.target.value + 's';
@@ -417,6 +450,29 @@
             setupLayoutEditor();
         });
 
+        // ================== اسم المُرسل ==================
+        function getDeviceName() {
+            return localStorage.getItem('quill_sender_name') || "Web App";
+        }
+        function checkDeviceName() {
+            if(!localStorage.getItem('quill_sender_name')) {
+                showDeviceNameModal();
+            }
+        }
+        function showDeviceNameModal() {
+            document.getElementById('deviceNameInput').value = getDeviceName() !== "Web App" ? getDeviceName() : "";
+            document.getElementById('deviceNameModal').style.display = 'flex';
+        }
+        function saveDeviceName() {
+            const name = document.getElementById('deviceNameInput').value.trim();
+            if(name) {
+                localStorage.setItem('quill_sender_name', name);
+                document.getElementById('deviceNameModal').style.display = 'none';
+            } else {
+                alert("يرجى كتابة اسم صحيح.");
+            }
+        }
+
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -424,12 +480,36 @@
             if(pageId === 'favoritesPage') loadFavoritesList();
         }
 
-        // ================== الروبوتات والتحكم ==================
-        function loadScreens() {
+        // ================== الروبوتات ومحتواها الأخير ==================
+        async function fetchLastContentForScreen(screenId) {
+            try {
+                const snap = await db.collection("screen_content")
+                    .where("screenId", "==", screenId)
+                    .orderBy("createdAt", "desc")
+                    .limit(1).get();
+                if(!snap.empty) {
+                    const doc = snap.docs[0].data();
+                    let icon = "📄";
+                    if(doc.mediaType === 'video') icon = "🎬";
+                    else if(doc.mediaType === 'image') icon = "🖼️";
+                    else if(doc.mediaType === 'url') icon = "🌐";
+                    return { text: `${icon} ${doc.originalFileName || 'محتوى'}`, batchId: doc.batchId || doc.id };
+                }
+            } catch(e) { console.error(e); }
+            return { text: "لا يوجد محتوى سابق", batchId: null };
+        }
+
+        async function loadScreens() {
             selectedRobotsText.innerText = "جاري البحث...";
-            db.collection("screens").get().then((snap) => {
+            try {
+                const snap = await db.collection("screens").get();
                 screens = [];
-                snap.forEach((doc) => screens.push({ id: doc.id, name: doc.data().screenName || doc.id }));
+                for(let doc of snap.docs) {
+                    const data = doc.data();
+                    const s = { id: doc.id, name: data.screenName || doc.id, lastContentText: "جاري التحميل...", lastBatchId: null };
+                    screens.push(s);
+                }
+                
                 if (screens.length === 0) { selectedRobotsText.innerText = "لا توجد شاشات مسجلة"; selectedScreens = []; }
                 else {
                     if(selectedScreens.length === 0) selectedScreens = [screens[0]];
@@ -438,8 +518,15 @@
                         if(selectedScreens.length === 0) selectedScreens = [screens[0]];
                     }
                     updateSelectedRobotsText();
+                    
+                    // جلب آخر محتوى لكل شاشة في الخلفية
+                    for(let i=0; i<screens.length; i++) {
+                        const content = await fetchLastContentForScreen(screens[i].id);
+                        screens[i].lastContentText = content.text;
+                        screens[i].lastBatchId = content.batchId;
+                    }
                 }
-            }).catch(e => selectedRobotsText.innerText = "خطأ في الاتصال");
+            } catch(e) { selectedRobotsText.innerText = "خطأ في الاتصال"; }
         }
         
         function updateSelectedRobotsText() {
@@ -461,7 +548,10 @@
                 const isSel = selectedScreens.some(sel => sel.id === s.id);
                 const div = document.createElement('div');
                 div.className = 'robot-select-item' + (isSel ? ' selected' : '');
-                div.innerHTML = `<div>${s.name}</div><div class="robot-checkbox">${isSel ? '✓' : ''}</div>`;
+                div.innerHTML = `<div>
+                    <div>${s.name}</div>
+                    <div class="robot-preview-text">الآن: ${s.lastContentText || 'غير معروف'}</div>
+                </div><div class="robot-checkbox">${isSel ? '✓' : ''}</div>`;
                 div.onclick = () => {
                     if(isSel) selectedScreens = selectedScreens.filter(sel => sel.id !== s.id);
                     else selectedScreens.push(s);
@@ -482,7 +572,12 @@
             screens.forEach(s => {
                 const div = document.createElement('div');
                 div.className = 'media-item';
-                div.innerHTML = `<div style="font-size:24px; margin:0 10px;">📱</div><div style="flex:1; font-size:16px;">${s.name}</div>`;
+                div.innerHTML = `
+                    <div style="font-size:24px; margin:0 10px;">📱</div>
+                    <div style="flex:1;">
+                        <div style="font-size:16px;">${s.name}</div>
+                        <div class="robot-preview-text" style="font-size:12px;">الآن: ${s.lastContentText || 'غير معروف'}</div>
+                    </div>`;
                 div.onclick = () => { controlTargetScreenId = s.id; document.getElementById('remoteControlTitle').innerText = s.name; showPage('remoteControlPage'); };
                 list.appendChild(div);
             });
@@ -498,14 +593,12 @@
         function saveToFavorites() {
             const name = document.getElementById('favNameInput').value.trim() || "مفضلة بدون اسم";
             let favs = JSON.parse(localStorage.getItem('quill_favorites') || '[]');
-            // لا يمكن حفظ الملفات المرفوعة محلياً (Files) في localStorage بسهولة، سنحفظ فقط الروابط
-            // في تطبيق الأندرويد، كان يتم حفظ مسار الملف، هنا سنقتصر على الروابط أو نكتفي بالمتاح.
             const serializableMedia = selectedMedia.filter(m => m.mediaType === 'url').map(m => ({
                 name: m.name, mediaType: m.mediaType, durationSeconds: m.durationSeconds, url: m.url,
                 layoutX: m.layoutX, layoutY: m.layoutY, layoutW: m.layoutW, layoutH: m.layoutH
             }));
             if(serializableMedia.length === 0 && selectedMedia.length > 0) {
-                alert("تنبيه: النسخة الحالية لمتصفح الويب تحفظ فقط الروابط في المفضلة، ولا تحفظ ملفات الفيديو/الصور المرفوعة من جهازك لأسباب أمنية.");
+                alert("تنبيه: يتم حالياً حفظ الروابط فقط في المفضلة (لا يمكن تخزين فيديوهات هاتفك محلياً في الويب للمستقبل).");
                 document.getElementById('saveFavModal').style.display='none';
                 return;
             }
@@ -536,7 +629,7 @@
                     <button class="delete-btn" onclick="event.stopPropagation(); deleteFav(${i})">✖</button>
                 `;
                 div.onclick = () => {
-                    selectedMedia = fav.items.map(m => ({ ...m, file: null })); // استعادة
+                    selectedMedia = fav.items.map(m => ({ ...m, file: null })); 
                     selectedMediaIndex = selectedMedia.length > 0 ? 0 : -1;
                     showPage('homePage');
                     refreshUI();
@@ -634,14 +727,39 @@
             function saveLayout() { if(selectedMediaIndex >= 0) { const item = selectedMedia[selectedMediaIndex]; const pw = previewArea.clientWidth; const ph = previewArea.clientHeight; item.layoutX = mediaBox.offsetLeft / pw; item.layoutY = mediaBox.offsetTop / ph; item.layoutW = mediaBox.offsetWidth / pw; item.layoutH = mediaBox.offsetHeight / ph; } }
         }
 
-        async function sendToScreens() {
+        // ================== الإرسال والتحذير المتعدد ==================
+        function checkMismatchBeforeSend() {
             if (selectedScreens.length === 0) { alert("الرجاء تحديد روبوت واحد على الأقل!"); return showRobotsModal(); }
             if (selectedMedia.length === 0) return alert("قم بإضافة وسائط أو روابط للإرسال");
 
+            if (selectedScreens.length > 1) {
+                // التحقق من اختلاف المحتوى الحالي للشاشات المحددة
+                let firstBatchId = selectedScreens[0].lastBatchId;
+                let isMismatch = false;
+                for (let i = 1; i < selectedScreens.length; i++) {
+                    if (selectedScreens[i].lastBatchId !== firstBatchId) {
+                        isMismatch = true;
+                        break;
+                    }
+                }
+                
+                if (isMismatch) {
+                    document.getElementById('mismatchWarningModal').style.display = 'flex';
+                    return; // إيقاف الإرسال حتى يؤكد
+                }
+            }
+            
+            // إذا كان محتوى واحد أو شاشة واحدة، أرسل فوراً
+            proceedSendToScreens();
+        }
+
+        async function proceedSendToScreens() {
+            document.getElementById('mismatchWarningModal').style.display = 'none';
             const overlay = document.getElementById('loadingOverlay');
             const loadingStatus = document.getElementById('loadingStatus');
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
+            const senderName = getDeviceName(); // جلب اسم المرسل
             
             overlay.style.display = 'flex'; progressBar.style.width = '0%'; progressText.innerText = '0%';
             const batchId = Date.now().toString(); const batchTotal = selectedMedia.length; const totalTasks = batchTotal * selectedScreens.length; let currentTask = 0;
@@ -656,7 +774,7 @@
                         
                         if (item.mediaType === 'url') {
                             await db.collection("screen_content").doc(cid).set({
-                                screenId: s.id, storagePath: "", mediaType: "url", senderName: "Web App", status: "pending", originalFileName: item.name,
+                                screenId: s.id, storagePath: "", mediaType: "url", senderName: senderName, status: "pending", originalFileName: item.name,
                                 durationSeconds: item.durationSeconds, batchId: batchId, batchOrder: i, batchTotal: batchTotal, replacePlaylist: true,
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp(), layoutX: item.layoutX, layoutY: item.layoutY, layoutW: item.layoutW, layoutH: item.layoutH, url: item.url
                             });
@@ -672,7 +790,7 @@
                                 );
                             });
                             await db.collection("screen_content").doc(cid).set({
-                                screenId: s.id, storagePath: path, mediaType: item.mediaType, senderName: "Web App", status: "pending", originalFileName: item.name,
+                                screenId: s.id, storagePath: path, mediaType: item.mediaType, senderName: senderName, status: "pending", originalFileName: item.name,
                                 durationSeconds: item.durationSeconds, batchId: batchId, batchOrder: i, batchTotal: batchTotal, replacePlaylist: true,
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp(), layoutX: item.layoutX, layoutY: item.layoutY, layoutW: item.layoutW, layoutH: item.layoutH
                             });
@@ -680,7 +798,14 @@
                     }
                 }
                 progressBar.style.width = '100%'; progressText.innerText = '100%'; loadingStatus.innerText = "اكتمل الإرسال بنجاح!";
-                setTimeout(() => { overlay.style.display = 'none'; selectedMedia = []; selectedMediaIndex = -1; refreshUI(); }, 1000);
+                
+                // تحديث آخر محتوى في الذاكرة لكي لا يظهر تحذير مرة ثانية إذا ضغط إرسال مرتين
+                selectedScreens.forEach(s => {
+                    s.lastBatchId = batchId;
+                    s.lastContentText = `الآن أُرسل: ${selectedMedia[0].name} ...`;
+                });
+
+                setTimeout(() => { overlay.style.display = 'none'; selectedMedia = []; selectedMediaIndex = -1; refreshUI(); loadScreens(); }, 1000);
             } catch (e) {
                 alert("حدث خطأ أثناء الرفع: " + e.message); overlay.style.display = 'none';
             }
