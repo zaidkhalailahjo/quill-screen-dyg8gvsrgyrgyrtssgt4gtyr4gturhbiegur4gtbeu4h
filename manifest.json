@@ -10,6 +10,12 @@
     "icons": [
         {
             "src": "https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg",
             "sizes": "512x512",
             "type": "image/jpeg",
             "purpose": "any maskable"
