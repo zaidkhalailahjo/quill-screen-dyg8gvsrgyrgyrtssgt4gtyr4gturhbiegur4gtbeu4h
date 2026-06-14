@@ -9,29 +9,49 @@
     <link rel="icon" href="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg">
     
     <style>
+        :root {
+            --bg-color: #070C10;
+            --panel-bg: #111A22;
+            --border-color: #1F2A35;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8899A6;
+            --primary: #00A878;
+            --danger: #E74C3C;
+            --app-bg: #0a1014;
+        }
+
+        body.light-mode {
+            --bg-color: #F5F8FA;
+            --panel-bg: #FFFFFF;
+            --border-color: #E1E8ED;
+            --text-primary: #14171A;
+            --text-secondary: #657786;
+            --app-bg: #E1E8ED;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: #070C10; color: #FFFFFF;
+            background-color: var(--bg-color); color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent; overflow-x: hidden; transition: background-color 0.3s, color 0.3s;
         }
         #app {
             display: flex; flex-direction: column; height: 100vh;
-            max-width: 600px; margin: 0 auto; background-color: #0a1014; position: relative;
+            max-width: 600px; margin: 0 auto; background-color: var(--app-bg); position: relative; transition: background-color 0.3s;
         }
 
         /* Header */
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background-color: #111A22; border-bottom: 1px solid #1F2A35;
+            padding: 15px 20px; background-color: var(--panel-bg); border-bottom: 1px solid var(--border-color);
         }
         .header-clickable { cursor: pointer; flex: 1; display: flex; align-items: center; gap: 12px; }
-        .icon { font-size: 24px; display: flex; align-items: center; color:#00A878; }
-        .label { font-size: 12px; color: #8899A6; }
+        .icon { font-size: 24px; display: flex; align-items: center; color:var(--primary); }
+        .label { font-size: 12px; color: var(--text-secondary); }
         .value { font-size: 15px; font-weight: bold; }
         .icon-btn {
-            background: none; border: none; font-size: 20px; color: white; cursor: pointer;
-            padding: 8px; border-radius: 50%; background-color: #1F2A35;
+            background: none; border: none; font-size: 20px; color: var(--text-primary); cursor: pointer;
+            padding: 8px; border-radius: 50%; background-color: var(--border-color);
             display: flex; align-items: center; justify-content: center;
         }
 
@@ -39,14 +59,19 @@
         .page { display: none; flex-direction: column; flex: 1; height: 100%; overflow: hidden; }
         .page.active { display: flex; }
         .page-header {
-            display: flex; align-items: center; padding: 15px 20px; background-color: #111A22; border-bottom: 1px solid #1F2A35;
+            display: flex; align-items: center; padding: 15px 20px; background-color: var(--panel-bg); border-bottom: 1px solid var(--border-color);
         }
-        .back-btn { background: none; border: none; color: white; font-size: 18px; margin-left: 15px; cursor: pointer; }
+        .back-btn { background: none; border: none; color: var(--text-primary); font-size: 18px; margin-left: 15px; cursor: pointer; }
+
+        /* Login & Forms */
+        .auth-container { padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: center; flex: 1; }
+        .auth-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--panel-bg); color: var(--text-primary); font-size: 16px; }
+        .auth-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; background-color: var(--primary); color: white; font-size: 18px; font-weight: bold; cursor: pointer; }
 
         /* Preview Area */
         .preview-area { width: 100%; aspect-ratio: 16/9; background-color: #000; position: relative; overflow: hidden; margin-bottom: 15px; }
         .media-box {
-            position: absolute; border: 2px solid #00A878; box-shadow: 0 0 10px rgba(0, 168, 120, 0.5);
+            position: absolute; border: 2px solid var(--primary); box-shadow: 0 0 10px rgba(0, 168, 120, 0.5);
             left: 0; top: 0; width: 100%; height: 100%; touch-action: none;
         }
         .media-box img, .media-box video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -56,34 +81,36 @@
         }
         .resize-handle {
             position: absolute; bottom: 0; right: 0; width: 30px; height: 30px;
-            background: linear-gradient(135deg, transparent 50%, #00A878 50%); cursor: se-resize;
+            background: linear-gradient(135deg, transparent 50%, var(--primary) 50%); cursor: se-resize;
         }
-        .empty-preview { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #8899A6; font-size: 14px; }
+        .empty-preview { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 14px; }
 
         /* Controls */
         .controls-bar { display: flex; gap: 10px; padding: 0 20px 15px; }
         .add-btn {
-            background-color: #1F2A35; color: white; border: none; border-radius: 12px; padding: 12px 20px;
+            background-color: var(--border-color); color: var(--text-primary); border: none; border-radius: 12px; padding: 12px 20px;
             font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
         .send-btn {
-            flex: 1; background-color: #00A878; color: white; border: none; border-radius: 12px;
+            flex: 1; background-color: var(--primary); color: white; border: none; border-radius: 12px;
             font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
         /* Duration */
         .duration-control { padding: 0 20px 15px; }
-        .duration-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #8899A6;}
-        .duration-value { color: white; font-weight: bold; }
-        input[type=range] { width: 100%; accent-color: #00A878; }
+        .duration-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--text-secondary);}
+        .duration-value { color: var(--text-primary); font-weight: bold; }
+        input[type=range] { width: 100%; accent-color: var(--primary); }
 
         /* Media List */
         .media-list { flex: 1; overflow-y: auto; padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
         .media-item {
             display: flex; align-items: center; gap: 12px; padding: 10px;
-            background-color: #111A22; border-radius: 12px; border: 1px solid #1F2A35; cursor: pointer;
+            background-color: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border-color); cursor: grab;
         }
-        .media-item.active { border-color: #00A878; background-color: rgba(0, 168, 120, 0.1); }
+        .media-item:active { cursor: grabbing; }
+        .media-item.active { border-color: var(--primary); background-color: rgba(0, 168, 120, 0.1); }
+        .sortable-ghost { opacity: 0.4; }
         .media-thumb {
             width: 60px; height: 60px; border-radius: 8px; background-color: #000;
             display: flex; align-items: center; justify-content: center; overflow: hidden; color: #8899A6;
@@ -91,69 +118,85 @@
         .media-thumb img, .media-thumb video { width: 100%; height: 100%; object-fit: cover; }
         .media-info { flex: 1; }
         .media-name { font-size: 14px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;}
-        .media-type { font-size: 12px; color: #8899A6; }
-        .media-actions button { background: none; border: none; color: white; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .delete-btn { color: #E74C3C !important; }
+        .media-type { font-size: 12px; color: var(--text-secondary); }
+        .media-actions button { background: none; border: none; color: var(--text-primary); padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .delete-btn { color: var(--danger) !important; }
 
         /* Loader & Progress */
         .loading-overlay {
             position: absolute; inset: 0; background-color: rgba(7, 12, 16, 0.95);
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 100;
         }
-        .progress-container { width: 80%; max-width: 300px; background-color: #1F2A35; border-radius: 10px; overflow: hidden; height: 10px; margin-top: 15px; }
-        .progress-bar { height: 100%; width: 0%; background-color: #00A878; transition: width 0.2s; }
-        .progress-text { font-size: 18px; font-weight: bold; margin-top: 5px; color: #00A878; }
+        .progress-container { width: 80%; max-width: 300px; background-color: var(--border-color); border-radius: 10px; overflow: hidden; height: 10px; margin-top: 15px; }
+        .progress-bar { height: 100%; width: 0%; background-color: var(--primary); transition: width 0.2s; }
+        .progress-text { font-size: 18px; font-weight: bold; margin-top: 5px; color: var(--primary); }
         .loading-status { font-size: 14px; color: #8899A6; margin-top: 5px; }
 
         /* Modals */
         .modal { position: absolute; inset: 0; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .modal-content { background-color: #111A22; padding: 20px; border-radius: 16px; width: 90%; max-width: 320px; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-content { background-color: var(--panel-bg); padding: 20px; border-radius: 16px; width: 90%; max-width: 320px; max-height: 80vh; display: flex; flex-direction: column; overflow-y:auto; }
         .modal-content.text-center { text-align: center; }
         .modal-content h3 { margin-bottom: 15px; font-size: 18px; }
-        .modal-content input[type="url"], .modal-content input[type="text"] {
-            width: 100%; padding: 12px; background-color: #0a1014; border: 1px solid #1F2A35; color: white; border-radius: 8px; margin-bottom: 20px;
+        .modal-content input[type="url"], .modal-content input[type="text"], .modal-content input[type="email"], .modal-content input[type="password"] {
+            width: 100%; padding: 12px; background-color: var(--app-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; margin-bottom: 20px;
         }
         .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
         .modal-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-secondary { background-color: #1F2A35; color: white; }
-        .btn-primary { background-color: #00A878; color: white; }
-        .btn-danger { background-color: #E74C3C; color: white; }
+        .btn-secondary { background-color: var(--border-color); color: var(--text-primary); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; }
         
         /* Robots List */
         .robots-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         .robot-select-item {
             display: flex; align-items: center; justify-content: space-between; padding: 12px;
-            background-color: #0a1014; border-radius: 8px; border: 1px solid #1F2A35; cursor: pointer;
+            background-color: var(--app-bg); border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;
         }
-        .robot-select-item.selected { border-color: #00A878; background-color: rgba(0, 168, 120, 0.1); }
-        .robot-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #8899A6; display: flex; align-items: center; justify-content: center; }
-        .robot-select-item.selected .robot-checkbox { background-color: #00A878; border-color: #00A878; }
-        .robot-preview-text { font-size: 11px; color: #8899A6; margin-top: 4px; }
+        .robot-select-item.selected { border-color: var(--primary); background-color: rgba(0, 168, 120, 0.1); }
+        .robot-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+        .robot-select-item.selected .robot-checkbox { background-color: var(--primary); border-color: var(--primary); }
+        .robot-preview-text { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        .robot-owner { font-size: 10px; background-color:var(--border-color); padding: 2px 6px; border-radius: 4px; color: var(--text-primary); }
 
         /* Menu List */
         .menu-list { display: flex; flex-direction: column; gap: 5px; }
         .menu-item {
             padding: 15px; font-size: 16px; display: flex; align-items: center; gap: 15px;
-            background-color: #111A22; border: none; color: white; text-align: right; cursor: pointer; border-radius: 8px;
+            background-color: var(--panel-bg); border: none; color: var(--text-primary); text-align: right; cursor: pointer; border-radius: 8px;
         }
-        .menu-item:hover { background-color: #1F2A35; }
+        .menu-item:hover { background-color: var(--border-color); }
 
         /* Screen Control UI */
         .control-grid { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .control-row { display: flex; gap: 15px; justify-content: center; }
         .control-btn {
-            flex: 1; padding: 15px; border-radius: 12px; background-color: #1F2A35; color: white; border: none;
-            font-size: 18px; cursor: pointer; font-weight: bold; max-width: 120px;
+            flex: 1; padding: 15px; border-radius: 12px; background-color: var(--border-color); color: var(--text-primary); border: none;
+            font-size: 18px; cursor: pointer; font-weight: bold; max-width: 120px; display:flex; flex-direction:column; align-items:center; gap:5px;
         }
-        .control-btn:active { background-color: #00A878; }
-        .control-label { text-align: center; color: #8899A6; margin-bottom: -10px; font-size: 14px; }
+        .control-btn:active { background-color: var(--primary); color: white; }
+        .control-label { text-align: center; color: var(--text-secondary); margin-bottom: -10px; font-size: 14px; }
     </style>
 </head>
 <body>
     <div id="app">
         
+        <!-- ================== صفحة تسجيل الدخول ================== -->
+        <div id="loginPage" class="page active">
+            <div style="text-align:center; padding: 50px 20px 20px;">
+                <img src="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg" style="width:100px; height:100px; border-radius:20px; box-shadow:0 10px 20px rgba(0,0,0,0.5);">
+                <h1 style="margin-top:20px; color:var(--primary);">Quill Sender</h1>
+                <p style="color:var(--text-secondary); margin-top:10px;">تسجيل الدخول للنظام</p>
+            </div>
+            <div class="auth-container">
+                <input type="email" id="loginEmail" class="auth-input" placeholder="البريد الإلكتروني">
+                <input type="password" id="loginPassword" class="auth-input" placeholder="كلمة المرور">
+                <button class="auth-btn" onclick="handleLogin()">دخول</button>
+                <div id="loginError" style="color:var(--danger); font-size:14px; display:none;"></div>
+            </div>
+        </div>
+
         <!-- ================== الصفحة الرئيسية ================== -->
-        <div id="homePage" class="page active">
+        <div id="homePage" class="page">
             <header class="header">
                 <div class="header-clickable" id="headerRobots" title="تحديد الروبوتات">
                     <span class="icon">
@@ -205,6 +248,16 @@
             <div class="media-list" id="mediaList"></div>
         </div>
 
+        <!-- ================== صفحة إدارة الحسابات (للمدير) ================== -->
+        <div id="accountsPage" class="page">
+            <div class="page-header">
+                <button class="back-btn" onclick="showPage('homePage')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                <h3 style="flex:1;">إدارة الحسابات 👥</h3>
+                <button class="icon-btn" onclick="showAddAccountModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+            </div>
+            <div class="media-list" id="accountsList" style="padding-top:15px;"></div>
+        </div>
+
         <!-- ================== صفحة المفضلة ================== -->
         <div id="favoritesPage" class="page">
             <div class="page-header">
@@ -223,25 +276,31 @@
             <div class="media-list" id="remoteScreensList" style="padding-top:15px;"></div>
         </div>
 
-        <!-- ================== صفحة التحكم بالشاشة (الروموت) ================== -->
+        <!-- ================== صفحة التحكم بالشاشة ================== -->
         <div id="remoteControlPage" class="page">
             <div class="page-header">
                 <button class="back-btn" onclick="showPage('remoteSelectPage')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
                 <h3 style="flex:1;" id="remoteControlTitle">التحكم</h3>
             </div>
             <div class="control-grid">
+                
+                <div id="freezeControlDiv" style="display:none; text-align:center; padding:15px; border-radius:12px; background-color:var(--panel-bg); border:1px solid var(--border-color);">
+                    <div style="font-size:16px; font-weight:bold; margin-bottom:15px;">وضع الأمان (تجميد الشاشة)</div>
+                    <button id="freezeBtn" class="control-btn" style="max-width:100%; margin:0 auto; background-color:var(--danger); color:white;" onclick="toggleFreeze()">تجميد الشاشة ❄️</button>
+                </div>
+
                 <div class="control-label">الصوت</div>
                 <div class="control-row">
-                    <button class="control-btn" onclick="sendControlCmd('vol_down')">🔉 -</button>
-                    <button class="control-btn" onclick="sendControlCmd('vol_up')">🔊 +</button>
+                    <button class="control-btn" onclick="sendControlCmd('vol_down')"><span style="font-size:24px;">🔉</span> خفض</button>
+                    <button class="control-btn" onclick="sendControlCmd('vol_up')"><span style="font-size:24px;">🔊</span> رفع</button>
                 </div>
                 
-                <hr style="border: 0; height: 1px; background: #1F2A35; margin: 10px 0;">
+                <hr style="border: 0; height: 1px; background: var(--border-color); margin: 10px 0;">
                 
                 <div class="control-label">السطوع</div>
                 <div class="control-row">
-                    <button class="control-btn" onclick="sendControlCmd('bright_down')">🔅 -</button>
-                    <button class="control-btn" onclick="sendControlCmd('bright_up')">🔆 +</button>
+                    <button class="control-btn" onclick="sendControlCmd('bright_down')"><span style="font-size:24px;">🔅</span> خفض</button>
+                    <button class="control-btn" onclick="sendControlCmd('bright_up')"><span style="font-size:24px;">🔆</span> رفع</button>
                 </div>
                 
                 <div style="display:flex; align-items:center; gap:15px; margin-top:20px;">
@@ -256,12 +315,31 @@
         <!-- القائمة الجانبية -->
         <div id="mainMenuModal" class="modal" style="display: none;" onclick="this.style.display='none'">
             <div class="modal-content" style="position: absolute; right: 0; top: 0; height: 100%; border-radius: 0; max-width: 250px;" onclick="event.stopPropagation()">
-                <div style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color:#00A878; padding-bottom: 15px; border-bottom: 1px solid #1F2A35;">القائمة</div>
+                <div style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color:var(--primary); padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">القائمة</div>
                 <div class="menu-list">
                     <button class="menu-item" onclick="showPage('favoritesPage'); document.getElementById('mainMenuModal').style.display='none';">⭐ المفضلة</button>
                     <button class="menu-item" onclick="showPage('remoteSelectPage'); document.getElementById('mainMenuModal').style.display='none';">📱 تحكم في الشاشة</button>
                     <button class="menu-item" onclick="showDeviceNameModal(); document.getElementById('mainMenuModal').style.display='none';">👤 إعداد اسم المُرسل</button>
-                    <button class="menu-item" onclick="alert('سيتم العمل عليها لاحقاً'); document.getElementById('mainMenuModal').style.display='none';">👥 إضافة حسابات</button>
+                    <button class="menu-item" id="menuAccountsBtn" style="display:none;" onclick="showPage('accountsPage'); document.getElementById('mainMenuModal').style.display='none';">👥 إدارة الحسابات</button>
+                    <hr style="border: 0; height: 1px; background: var(--border-color); margin: 5px 0;">
+                    <button class="menu-item" onclick="toggleTheme(); document.getElementById('mainMenuModal').style.display='none';">🌗 الوضع الليلي/النهاري</button>
+                    <button class="menu-item" style="color:var(--danger);" onclick="handleLogout()">🚪 تسجيل الخروج</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- إدارة الحساب (إضافة) -->
+        <div id="addAccountModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>إضافة حساب مستخدم</h3>
+                <input type="email" id="accEmail" placeholder="البريد الإلكتروني">
+                <input type="text" id="accPass" placeholder="كلمة المرور (6 أحرف على الأقل)">
+                <div style="font-size:14px; margin-bottom:10px;">اختر الشاشات المسموحة له:</div>
+                <div id="accScreensList" style="max-height:150px; overflow-y:auto; border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:15px; display:flex; flex-direction:column; gap:8px;"></div>
+                <div id="accLoading" style="color:var(--primary); display:none; text-align:center; margin-bottom:10px;">جاري الإنشاء...</div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="document.getElementById('addAccountModal').style.display='none'">إلغاء</button>
+                    <button class="btn-primary" onclick="createAccount()">إضافة</button>
                 </div>
             </div>
         </div>
@@ -270,7 +348,7 @@
         <div id="deviceNameModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <h3>اسم المُرسل (اسم جهازك)</h3>
-                <p style="font-size:12px; color:#8899A6; margin-bottom:10px;">سيظهر هذا الاسم على الشاشة عند استلام الملفات بدلاً من "Web App".</p>
+                <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">سيظهر هذا الاسم على الشاشة عند استلام الملفات.</p>
                 <input type="text" id="deviceNameInput" placeholder="مثال: آيفون محمد، أو الإدارة...">
                 <div class="modal-actions">
                     <button class="btn-secondary" onclick="document.getElementById('deviceNameModal').style.display='none'">إلغاء</button>
@@ -295,8 +373,8 @@
         <div id="mismatchWarningModal" class="modal" style="display: none;">
             <div class="modal-content text-center">
                 <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-                <h3 style="color:#E74C3C;">تنبيه: محتوى مختلف!</h3>
-                <p style="margin-bottom:20px; line-height:1.6; color:#8899A6; font-size:14px;">
+                <h3 style="color:var(--danger);">تنبيه: محتوى مختلف!</h3>
+                <p style="margin-bottom:20px; line-height:1.6; color:var(--text-secondary); font-size:14px;">
                     الشاشات المحددة تعرض حالياً محتويات مختلفة عن بعضها.<br>هل أنت متأكد أنك تريد إرسال هذا المحتوى واستبدال كل ما يعرضونه؟
                 </p>
                 <div class="modal-actions">
@@ -309,7 +387,7 @@
         <!-- تحديد الروبوتات -->
         <div id="robotsModal" class="modal" style="display: none;">
             <div class="modal-content" style="height: 60vh;">
-                <h3>تحديد الروبوتات</h3>
+                <h3>تحديد الروبوتات للإرسال</h3>
                 <div id="robotsList" class="robots-list"></div>
                 <div class="modal-actions">
                     <button id="closeRobotsBtn" class="btn-primary">موافق</button>
@@ -331,34 +409,23 @@
 
         <!-- طبقة التحميل -->
         <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00A878" stroke-width="2" style="margin-bottom:10px;"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="margin-bottom:10px;"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
             <div id="loadingText" style="font-size: 18px; font-weight:bold;">جاري الإرسال...</div>
             <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
             <div id="progressText" class="progress-text">0%</div>
             <div id="loadingStatus" class="loading-status">تحضير الملفات</div>
         </div>
         
-        <!-- نافذة تثبيت التطبيق -->
-        <div id="installModal" class="modal" style="display: none;">
-            <div class="modal-content text-center">
-                <img src="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg" alt="Icon" style="width: 64px; height: 64px; border-radius: 16px; margin-bottom: 15px;">
-                <h3>تثبيت التطبيق</h3>
-                <p id="installMessage" style="margin-bottom:20px; line-height:1.6; color:#8899A6;">قم بتثبيت التطبيق على جهازك للوصول السريع.</p>
-                <div class="modal-actions">
-                    <button class="btn-secondary" onclick="document.getElementById('installModal').style.display='none'; localStorage.setItem('installPromptClosed', 'true');">لاحقاً</button>
-                    <button id="installAppBtn" class="btn-primary" style="display:none;">تثبيت الآن</button>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- مكتبات Firebase -->
+    <!-- مكتبات Firebase و SortableJS -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <script>
-        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyClNv4LaNoGWCVWzgEllo-9cZ1qvlBlEUU",
             authDomain: "quill-bot-screen-13ecb.firebaseapp.com",
@@ -370,15 +437,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const storage = firebase.storage();
+        const auth = firebase.auth();
+        const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
 
-        // متغيرات
+        // Auth State
+        let currentUser = null;
+        let userRole = 'user';
+        let assignedScreenIds = [];
+        let allUsersData = {};
+
+        // App State
         let screens = [];
         let selectedScreens = [];
         let selectedMedia = [];
         let selectedMediaIndex = -1;
         let controlTargetScreenId = null;
+        let isLightMode = localStorage.getItem('theme') === 'light';
+        if(isLightMode) document.body.classList.add('light-mode');
 
-        // عناصر الواجهة
+        // Elements
         const selectedRobotsText = document.getElementById('selectedRobotsText');
         const mediaList = document.getElementById('mediaList');
         const previewArea = document.getElementById('previewArea');
@@ -392,36 +469,58 @@
         const robotsModal = document.getElementById('robotsModal');
         const robotsListContainer = document.getElementById('robotsList');
 
-        // PWA Install
-        let deferredPrompt;
-        const installModal = document.getElementById('installModal');
-        const installAppBtn = document.getElementById('installAppBtn');
-        const installMessage = document.getElementById('installMessage');
-
-        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-        const isInStandaloneMode = () => ('standalone' in window.navigator) && window.navigator.standalone;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            installMessage.innerText = "قم بتثبيت التطبيق على جهازك للوصول السريع وتجربة أفضل.";
-            installAppBtn.style.display = 'block';
-            if(!localStorage.getItem('installPromptClosed')) installModal.style.display = 'flex';
-        });
-
-        installAppBtn.addEventListener('click', async () => {
-            installModal.style.display = 'none';
-            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
-        });
-
         document.addEventListener('DOMContentLoaded', () => {
-            if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installPromptClosed')) {
-                installMessage.innerText = "لتثبيت التطبيق، اضغط على زر المشاركة بالأسفل ثم اختر 'إضافة إلى الصفحة الرئيسية'.";
-                installModal.style.display = 'flex';
-            }
-            
-            checkDeviceName();
-            loadScreens();
-            loadFavoritesList();
+            // إعداد السحب والإفلات (Drag & Drop)
+            new Sortable(mediaList, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                delay: 200, // للهواتف لتمييز السحب عن النقر
+                delayOnTouchOnly: true,
+                onEnd: function (evt) {
+                    const item = selectedMedia.splice(evt.oldIndex, 1)[0];
+                    selectedMedia.splice(evt.newIndex, 0, item);
+                    selectedMediaIndex = evt.newIndex;
+                    refreshUI();
+                }
+            });
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    try {
+                        const doc = await db.collection("users").doc(user.uid).get();
+                        if (doc.exists) {
+                            userRole = doc.data().role || 'user';
+                            assignedScreenIds = doc.data().assignedScreens || [];
+                        } else {
+                            // أول مستخدم يدخل يصبح مسؤولاً
+                            const usersSnap = await db.collection("users").limit(1).get();
+                            if (usersSnap.empty) {
+                                userRole = 'admin';
+                                await db.collection("users").doc(user.uid).set({ email: user.email, role: 'admin', assignedScreens: [] });
+                            } else {
+                                userRole = 'pending';
+                            }
+                        }
+                    } catch(e) { console.error(e); userRole = 'user'; }
+
+                    if (userRole === 'admin') {
+                        document.getElementById('menuAccountsBtn').style.display = 'flex';
+                        document.getElementById('freezeControlDiv').style.display = 'block';
+                        fetchAllUsers();
+                    } else {
+                        document.getElementById('menuAccountsBtn').style.display = 'none';
+                        document.getElementById('freezeControlDiv').style.display = 'none';
+                    }
+
+                    checkDeviceName();
+                    showPage('homePage');
+                    loadScreens();
+                    loadFavoritesList();
+                } else {
+                    showPage('loginPage');
+                }
+            });
 
             document.getElementById('refreshScreensBtn').onclick = (e) => { e.stopPropagation(); loadScreens(); };
             document.getElementById('headerRobots').onclick = showRobotsModal;
@@ -435,7 +534,10 @@
                 if(selectedMedia.length === 0) return alert("القائمة فارغة!");
                 document.getElementById('saveFavModal').style.display = 'flex';
             };
-            document.getElementById('sendBtn').onclick = checkMismatchBeforeSend;
+            document.getElementById('sendBtn').onclick = () => {
+                if(selectedMedia.length === 0) return alert("قم بإضافة وسائط!");
+                showRobotsModal(); // إجبار المستخدم على اختيار الشاشات عند الإرسال دائماً
+            };
             
             durationSlider.oninput = (e) => {
                 durationLabel.innerText = e.target.value + 's';
@@ -450,54 +552,127 @@
             setupLayoutEditor();
         });
 
-        // ================== اسم المُرسل ==================
-        function getDeviceName() {
-            return localStorage.getItem('quill_sender_name') || "Web App";
-        }
-        function checkDeviceName() {
-            if(!localStorage.getItem('quill_sender_name')) {
-                showDeviceNameModal();
-            }
-        }
-        function showDeviceNameModal() {
-            document.getElementById('deviceNameInput').value = getDeviceName() !== "Web App" ? getDeviceName() : "";
-            document.getElementById('deviceNameModal').style.display = 'flex';
-        }
-        function saveDeviceName() {
-            const name = document.getElementById('deviceNameInput').value.trim();
-            if(name) {
-                localStorage.setItem('quill_sender_name', name);
-                document.getElementById('deviceNameModal').style.display = 'none';
-            } else {
-                alert("يرجى كتابة اسم صحيح.");
+        // ================== المصادقة ==================
+        async function handleLogin() {
+            const e = document.getElementById('loginEmail').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            const err = document.getElementById('loginError');
+            if(!e || !p) { err.innerText = "أدخل الإيميل والباسورد"; err.style.display='block'; return; }
+            err.style.display = 'none';
+            try {
+                await auth.signInWithEmailAndPassword(e, p);
+            } catch(error) {
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    // إذا لم يكن موجوداً، حاول إنشاء الحساب (أول مرة فقط إذا كان مدير)
+                    try {
+                        const usersSnap = await db.collection("users").limit(1).get();
+                        if(usersSnap.empty) {
+                            await auth.createUserWithEmailAndPassword(e, p);
+                        } else {
+                            err.innerText = "البيانات غير صحيحة، أو الحساب غير موجود"; err.style.display='block';
+                        }
+                    } catch(e2) { err.innerText = e2.message; err.style.display='block'; }
+                } else {
+                    err.innerText = error.message; err.style.display='block';
+                }
             }
         }
 
+        function handleLogout() {
+            auth.signOut();
+        }
+
+        function toggleTheme() {
+            isLightMode = !isLightMode;
+            if(isLightMode) document.body.classList.add('light-mode');
+            else document.body.classList.remove('light-mode');
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        }
+
+        // ================== إدارة الحسابات (Admin) ==================
+        async function fetchAllUsers() {
+            if(userRole !== 'admin') return;
+            const snap = await db.collection("users").get();
+            allUsersData = {};
+            const list = document.getElementById('accountsList');
+            if(list) list.innerHTML = '';
+            snap.forEach(doc => {
+                allUsersData[doc.id] = doc.data();
+                if(list) {
+                    const div = document.createElement('div');
+                    div.className = 'media-item';
+                    div.innerHTML = `
+                        <div style="font-size:24px; margin:0 10px;">👤</div>
+                        <div style="flex:1;">
+                            <div style="font-size:16px;">${doc.data().email}</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">${doc.data().role === 'admin' ? 'مدير' : 'مستخدم'} - ${(doc.data().assignedScreens || []).length} شاشة</div>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                }
+            });
+        }
+
+        function showAddAccountModal() {
+            document.getElementById('accEmail').value = '';
+            document.getElementById('accPass').value = '';
+            const list = document.getElementById('accScreensList');
+            list.innerHTML = '';
+            screens.forEach(s => {
+                const div = document.createElement('div');
+                div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.gap = '10px';
+                div.innerHTML = `<input type="checkbox" id="chk_${s.id}" value="${s.id}" style="width:20px; height:20px;"> <label for="chk_${s.id}">${s.name}</label>`;
+                list.appendChild(div);
+            });
+            document.getElementById('addAccountModal').style.display = 'flex';
+        }
+
+        async function createAccount() {
+            const email = document.getElementById('accEmail').value.trim();
+            const pass = document.getElementById('accPass').value.trim();
+            if(!email || pass.length < 6) return alert("إيميل وباسورد صالح (6 أحرف على الأقل)");
+            const checks = document.querySelectorAll('#accScreensList input:checked');
+            const sc = Array.from(checks).map(c => c.value);
+            
+            document.getElementById('accLoading').style.display = 'block';
+            try {
+                // إنشاء مستخدم باستخدام Secondary App لكي لا يخرج المدير
+                const res = await secondaryApp.auth().createUserWithEmailAndPassword(email, pass);
+                await db.collection("users").doc(res.user.uid).set({ email: email, role: 'user', assignedScreens: sc });
+                await secondaryApp.auth().signOut();
+                alert("تم إضافة الحساب بنجاح!");
+                document.getElementById('addAccountModal').style.display = 'none';
+                fetchAllUsers();
+            } catch(e) {
+                alert("خطأ: " + e.message);
+            }
+            document.getElementById('accLoading').style.display = 'none';
+        }
+
+        function getUserEmailForScreen(screenId) {
+            if(userRole !== 'admin') return '';
+            let owners = [];
+            for(let uid in allUsersData) {
+                if(allUsersData[uid].assignedScreens && allUsersData[uid].assignedScreens.includes(screenId)) {
+                    owners.push(allUsersData[uid].email.split('@')[0]);
+                }
+            }
+            return owners.length > 0 ? owners.join(', ') : 'غير مخصص';
+        }
+
+        // ================== الشاشات والمحتوى ==================
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             if(pageId === 'remoteSelectPage') renderRemoteScreensList();
             if(pageId === 'favoritesPage') loadFavoritesList();
+            if(pageId === 'accountsPage') fetchAllUsers();
         }
 
-        // ================== الروبوتات ومحتواها الأخير ==================
-        async function fetchLastContentForScreen(screenId) {
-            try {
-                const snap = await db.collection("screen_content")
-                    .where("screenId", "==", screenId)
-                    .orderBy("createdAt", "desc")
-                    .limit(1).get();
-                if(!snap.empty) {
-                    const doc = snap.docs[0].data();
-                    let icon = "📄";
-                    if(doc.mediaType === 'video') icon = "🎬";
-                    else if(doc.mediaType === 'image') icon = "🖼️";
-                    else if(doc.mediaType === 'url') icon = "🌐";
-                    return { text: `${icon} ${doc.originalFileName || 'محتوى'}`, batchId: doc.batchId || doc.id };
-                }
-            } catch(e) { console.error(e); }
-            return { text: "لا يوجد محتوى سابق", batchId: null };
-        }
+        function getDeviceName() { return localStorage.getItem('quill_sender_name') || "Web App"; }
+        function checkDeviceName() { if(!localStorage.getItem('quill_sender_name')) showDeviceNameModal(); }
+        function showDeviceNameModal() { document.getElementById('deviceNameInput').value = getDeviceName() !== "Web App" ? getDeviceName() : ""; document.getElementById('deviceNameModal').style.display = 'flex'; }
+        function saveDeviceName() { const n = document.getElementById('deviceNameInput').value.trim(); if(n) { localStorage.setItem('quill_sender_name', n); document.getElementById('deviceNameModal').style.display = 'none'; } }
 
         async function loadScreens() {
             selectedRobotsText.innerText = "جاري البحث...";
@@ -505,12 +680,15 @@
                 const snap = await db.collection("screens").get();
                 screens = [];
                 for(let doc of snap.docs) {
-                    const data = doc.data();
-                    const s = { id: doc.id, name: data.screenName || doc.id, lastContentText: "جاري التحميل...", lastBatchId: null };
-                    screens.push(s);
+                    // فلترة الشاشات المسموحة للمستخدم العادي
+                    if(userRole === 'admin' || assignedScreenIds.includes(doc.id)) {
+                        const data = doc.data();
+                        const s = { id: doc.id, name: data.screenName || doc.id, lastContentText: "جاري التحميل...", isFrozen: data.isFrozen || false, currentPlaylist: data.currentPlaylist || null };
+                        screens.push(s);
+                    }
                 }
                 
-                if (screens.length === 0) { selectedRobotsText.innerText = "لا توجد شاشات مسجلة"; selectedScreens = []; }
+                if (screens.length === 0) { selectedRobotsText.innerText = "لا توجد شاشات مسجلة لك"; selectedScreens = []; }
                 else {
                     if(selectedScreens.length === 0) selectedScreens = [screens[0]];
                     else {
@@ -519,11 +697,15 @@
                     }
                     updateSelectedRobotsText();
                     
-                    // جلب آخر محتوى لكل شاشة في الخلفية
+                    // جلب آخر محتوى للمعاينة النصية
                     for(let i=0; i<screens.length; i++) {
-                        const content = await fetchLastContentForScreen(screens[i].id);
-                        screens[i].lastContentText = content.text;
-                        screens[i].lastBatchId = content.batchId;
+                        if(screens[i].currentPlaylist && screens[i].currentPlaylist.length > 0) {
+                            const p = screens[i].currentPlaylist[0];
+                            let icon = "📄"; if(p.mediaType === 'video') icon = "🎬"; else if(p.mediaType === 'image') icon = "🖼️"; else if(p.mediaType === 'url') icon = "🌐";
+                            screens[i].lastContentText = `${icon} ${p.originalFileName || 'محتوى'} (${screens[i].currentPlaylist.length} عناصر)`;
+                        } else {
+                            screens[i].lastContentText = "لا يوجد محتوى";
+                        }
                     }
                 }
             } catch(e) { selectedRobotsText.innerText = "خطأ في الاتصال"; }
@@ -535,12 +717,41 @@
             else selectedRobotsText.innerText = selectedScreens.map(s => s.name).join(' · ');
         }
         
+        // عند اختيار روبوت محدد لجلب محتوياته (Sync)
+        function selectSingleRobotAndSync(screenObj) {
+            selectedScreens = [screenObj];
+            updateSelectedRobotsText();
+            document.getElementById('robotsModal').style.display = 'none';
+            
+            if(screenObj.currentPlaylist && screenObj.currentPlaylist.length > 0) {
+                // تحويل البلاي ليست إلى عناصر selectedMedia
+                selectedMedia = screenObj.currentPlaylist.map(p => ({
+                    file: null, // الملفات القديمة لا يمكن رفعها مرة أخرى، نعتبرها روابط موجودة
+                    name: p.originalFileName || "محتوى",
+                    mimeType: p.mediaType === 'video' ? 'video/mp4' : (p.mediaType==='image'?'image/jpeg':'text/html'),
+                    mediaType: p.mediaType,
+                    durationSeconds: p.durationSeconds || 15,
+                    url: p.url || p.storagePathUrl || "https://quill.farah-snacks.store/", // تحتاج الرابط الفعلي (سيتم حله لاحقاً بروابط Storage)
+                    layoutX: p.layoutX||0, layoutY: p.layoutY||0, layoutW: p.layoutW||1, layoutH: p.layoutH||1,
+                    existingPath: p.storagePath // حفظ المسار القديم
+                }));
+                selectedMediaIndex = 0;
+            } else {
+                selectedMedia = [];
+                selectedMediaIndex = -1;
+            }
+            refreshUI();
+            showPage('homePage');
+        }
+
         function showRobotsModal() {
             robotsListContainer.innerHTML = '';
-            const isAll = selectedScreens.length === screens.length && screens.length > 0;
+            
+            // إضافة زر اختيار الكل (فقط للإرسال)
             const selectAllDiv = document.createElement('div');
+            const isAll = selectedScreens.length === screens.length && screens.length > 0;
             selectAllDiv.className = 'robot-select-item' + (isAll ? ' selected' : '');
-            selectAllDiv.innerHTML = `<div style="font-weight:bold; color:#00A878;">تحديد الكل</div><div class="robot-checkbox">${isAll ? '✓' : ''}</div>`;
+            selectAllDiv.innerHTML = `<div style="font-weight:bold; color:var(--primary);">تحديد الكل للإرسال</div><div class="robot-checkbox">${isAll ? '✓' : ''}</div>`;
             selectAllDiv.onclick = () => { selectedScreens = isAll ? [] : [...screens]; updateSelectedRobotsText(); showRobotsModal(); };
             robotsListContainer.appendChild(selectAllDiv);
             
@@ -548,10 +759,18 @@
                 const isSel = selectedScreens.some(sel => sel.id === s.id);
                 const div = document.createElement('div');
                 div.className = 'robot-select-item' + (isSel ? ' selected' : '');
+                
+                let ownerHtml = '';
+                if(userRole === 'admin') ownerHtml = `<span class="robot-owner">${getUserEmailForScreen(s.id)}</span>`;
+
                 div.innerHTML = `<div>
-                    <div>${s.name}</div>
-                    <div class="robot-preview-text">الآن: ${s.lastContentText || 'غير معروف'}</div>
-                </div><div class="robot-checkbox">${isSel ? '✓' : ''}</div>`;
+                    <div style="font-weight:bold;">${s.name} ${ownerHtml} ${s.isFrozen ? '❄️' : ''}</div>
+                    <div class="robot-preview-text">محتوى: ${s.lastContentText || 'غير معروف'}</div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn-secondary" style="padding:4px 8px; font-size:12px; border-radius:4px;" onclick="event.stopPropagation(); selectSingleRobotAndSync(${JSON.stringify(s).replace(/"/g, '&quot;')})">استدعاء المحتوى</button>
+                    <div class="robot-checkbox">${isSel ? '✓' : ''}</div>
+                </div>`;
                 div.onclick = () => {
                     if(isSel) selectedScreens = selectedScreens.filter(sel => sel.id !== s.id);
                     else selectedScreens.push(s);
@@ -559,46 +778,109 @@
                 };
                 robotsListContainer.appendChild(div);
             });
+            
+            // تغيير زر موافق إلى إرسال إذا كان هناك وسائط
+            const closeBtn = document.getElementById('closeRobotsBtn');
+            if(selectedMedia.length > 0) {
+                closeBtn.innerText = "تأكيد الإرسال 🚀";
+                closeBtn.onclick = () => { robotsModal.style.display = 'none'; checkMismatchBeforeSend(); };
+            } else {
+                closeBtn.innerText = "موافق";
+                closeBtn.onclick = () => robotsModal.style.display = 'none';
+            }
+
             robotsModal.style.display = 'flex';
         }
 
-        function renderRemoteScreensList() {
-            const list = document.getElementById('remoteScreensList');
-            list.innerHTML = '';
-            if(screens.length === 0) {
-                list.innerHTML = `<div style="text-align:center; color:#8899A6; margin-top:50px;">لا يوجد روبوتات مسجلة</div>`;
-                return;
+        // ================== الإرسال والتحذير المتعدد ==================
+        function checkMismatchBeforeSend() {
+            if (selectedScreens.length === 0) return alert("الرجاء تحديد روبوت واحد على الأقل!");
+            if (selectedMedia.length === 0) return alert("قم بإضافة وسائط أو روابط للإرسال");
+
+            if (selectedScreens.length > 1) {
+                let firstBatchId = null;
+                if(selectedScreens[0].currentPlaylist && selectedScreens[0].currentPlaylist.length>0) firstBatchId = selectedScreens[0].currentPlaylist[0].batchId;
+                
+                let isMismatch = false;
+                for (let i = 1; i < selectedScreens.length; i++) {
+                    let bId = null;
+                    if(selectedScreens[i].currentPlaylist && selectedScreens[i].currentPlaylist.length>0) bId = selectedScreens[i].currentPlaylist[0].batchId;
+                    if (bId !== firstBatchId) { isMismatch = true; break; }
+                }
+                
+                if (isMismatch) {
+                    document.getElementById('mismatchWarningModal').style.display = 'flex';
+                    return;
+                }
             }
-            screens.forEach(s => {
-                const div = document.createElement('div');
-                div.className = 'media-item';
-                div.innerHTML = `
-                    <div style="font-size:24px; margin:0 10px;">📱</div>
-                    <div style="flex:1;">
-                        <div style="font-size:16px;">${s.name}</div>
-                        <div class="robot-preview-text" style="font-size:12px;">الآن: ${s.lastContentText || 'غير معروف'}</div>
-                    </div>`;
-                div.onclick = () => { controlTargetScreenId = s.id; document.getElementById('remoteControlTitle').innerText = s.name; showPage('remoteControlPage'); };
-                list.appendChild(div);
-            });
+            proceedSendToScreens();
         }
 
-        function sendControlCmd(cmd) {
-            if(!controlTargetScreenId) return;
-            db.collection("screens").doc(controlTargetScreenId).set({ command: cmd }, { merge: true })
-            .catch(e => alert("فشل الإرسال: " + e.message));
+        async function proceedSendToScreens() {
+            document.getElementById('mismatchWarningModal').style.display = 'none';
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingStatus = document.getElementById('loadingStatus');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const senderName = getDeviceName();
+            
+            overlay.style.display = 'flex'; progressBar.style.width = '0%'; progressText.innerText = '0%';
+            const batchId = Date.now().toString(); const batchTotal = selectedMedia.length; const totalTasks = batchTotal * selectedScreens.length; let currentTask = 0;
+            
+            try {
+                for (let s of selectedScreens) {
+                    for (let i = 0; i < selectedMedia.length; i++) {
+                        currentTask++;
+                        loadingStatus.innerText = `جاري إرسال (${selectedMedia[i].name}) إلى ${s.name} ...`;
+                        const item = selectedMedia[i]; const cid = db.collection('screen_content').doc().id;
+                        const baseProgress = ((currentTask - 1) / totalTasks) * 100;
+                        
+                        if (item.mediaType === 'url' || item.existingPath) {
+                            // رابط ويب أو عنصر تم استدعاؤه مسبقاً من الشاشة ولا نملك ملفه الفعلي
+                            await db.collection("screen_content").doc(cid).set({
+                                screenId: s.id, storagePath: item.existingPath || "", mediaType: item.mediaType, senderName: senderName, status: "pending", originalFileName: item.name,
+                                durationSeconds: item.durationSeconds, batchId: batchId, batchOrder: i, batchTotal: batchTotal, replacePlaylist: true,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(), layoutX: item.layoutX, layoutY: item.layoutY, layoutW: item.layoutW, layoutH: item.layoutH, url: item.url || ""
+                            });
+                            const p = Math.round((currentTask / totalTasks) * 100); progressBar.style.width = p + '%'; progressText.innerText = p + '%';
+                        } else {
+                            const ext = item.name.split('.').pop(); const path = `uploads/${s.id}/${cid}.${ext}`; const ref = storage.ref().child(path);
+                            const meta = { contentType: item.mimeType || (item.mediaType === 'image'?'image/jpeg':'video/mp4') };
+                            const uploadTask = ref.put(item.file, meta);
+                            await new Promise((resolve, reject) => {
+                                uploadTask.on('state_changed', 
+                                    (snapshot) => { const fileProgress = (snapshot.bytesTransferred / snapshot.totalBytes); const totalP = Math.round(baseProgress + (fileProgress * (100 / totalTasks))); progressBar.style.width = totalP + '%'; progressText.innerText = totalP + '%'; }, 
+                                    (error) => reject(error), () => resolve()
+                                );
+                            });
+                            // حفظ الرابط الفعلي لتتمكن الويب من عرضه لاحقاً عند الاستدعاء
+                            const downloadUrl = await ref.getDownloadURL();
+                            await db.collection("screen_content").doc(cid).set({
+                                screenId: s.id, storagePath: path, storagePathUrl: downloadUrl, mediaType: item.mediaType, senderName: senderName, status: "pending", originalFileName: item.name,
+                                durationSeconds: item.durationSeconds, batchId: batchId, batchOrder: i, batchTotal: batchTotal, replacePlaylist: true,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(), layoutX: item.layoutX, layoutY: item.layoutY, layoutW: item.layoutW, layoutH: item.layoutH
+                            });
+                        }
+                    }
+                }
+                progressBar.style.width = '100%'; progressText.innerText = '100%'; loadingStatus.innerText = "اكتمل الإرسال بنجاح!";
+                
+                setTimeout(() => { overlay.style.display = 'none'; selectedMedia = []; selectedMediaIndex = -1; refreshUI(); loadScreens(); }, 1000);
+            } catch (e) {
+                alert("حدث خطأ أثناء الرفع: " + e.message); overlay.style.display = 'none';
+            }
         }
-
+        
         // ================== المفضلة ==================
         function saveToFavorites() {
             const name = document.getElementById('favNameInput').value.trim() || "مفضلة بدون اسم";
             let favs = JSON.parse(localStorage.getItem('quill_favorites') || '[]');
-            const serializableMedia = selectedMedia.filter(m => m.mediaType === 'url').map(m => ({
-                name: m.name, mediaType: m.mediaType, durationSeconds: m.durationSeconds, url: m.url,
+            const serializableMedia = selectedMedia.filter(m => m.mediaType === 'url' || m.existingPath).map(m => ({
+                name: m.name, mediaType: m.mediaType, durationSeconds: m.durationSeconds, url: m.url, existingPath: m.existingPath,
                 layoutX: m.layoutX, layoutY: m.layoutY, layoutW: m.layoutW, layoutH: m.layoutH
             }));
             if(serializableMedia.length === 0 && selectedMedia.length > 0) {
-                alert("تنبيه: يتم حالياً حفظ الروابط فقط في المفضلة (لا يمكن تخزين فيديوهات هاتفك محلياً في الويب للمستقبل).");
+                alert("تنبيه: يجب إرسال الوسائط من هاتفك إلى الشاشة أولاً، ثم استدعاؤها من الشاشة وحفظها، أو حفظ الروابط فقط.");
                 document.getElementById('saveFavModal').style.display='none';
                 return;
             }
@@ -613,47 +895,22 @@
             const list = document.getElementById('favoritesList');
             list.innerHTML = '';
             let favs = JSON.parse(localStorage.getItem('quill_favorites') || '[]');
-            if(favs.length === 0) {
-                list.innerHTML = `<div style="text-align:center; color:#8899A6; margin-top:50px;">لا توجد مفضلات محفوظة</div>`;
-                return;
-            }
+            if(favs.length === 0) { list.innerHTML = `<div style="text-align:center; color:var(--text-secondary); margin-top:50px;">لا توجد مفضلات محفوظة</div>`; return; }
             favs.forEach((fav, i) => {
-                const div = document.createElement('div');
-                div.className = 'media-item';
-                div.innerHTML = `
-                    <div style="font-size:24px; margin:0 10px; color:#F1C40F;">⭐</div>
-                    <div style="flex:1;">
-                        <div style="font-size:16px;">${fav.name}</div>
-                        <div style="font-size:12px; color:#8899A6;">${fav.items.length} عناصر</div>
-                    </div>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteFav(${i})">✖</button>
-                `;
-                div.onclick = () => {
-                    selectedMedia = fav.items.map(m => ({ ...m, file: null })); 
-                    selectedMediaIndex = selectedMedia.length > 0 ? 0 : -1;
-                    showPage('homePage');
-                    refreshUI();
-                };
+                const div = document.createElement('div'); div.className = 'media-item';
+                div.innerHTML = `<div style="font-size:24px; margin:0 10px; color:#F1C40F;">⭐</div><div style="flex:1;"><div style="font-size:16px;">${fav.name}</div><div style="font-size:12px; color:var(--text-secondary);">${fav.items.length} عناصر</div></div><button class="delete-btn" onclick="event.stopPropagation(); deleteFav(${i})">✖</button>`;
+                div.onclick = () => { selectedMedia = fav.items.map(m => ({ ...m, file: null })); selectedMediaIndex = selectedMedia.length > 0 ? 0 : -1; showPage('homePage'); refreshUI(); };
                 list.appendChild(div);
             });
         }
-        function deleteFav(index) {
-            let favs = JSON.parse(localStorage.getItem('quill_favorites') || '[]');
-            favs.splice(index, 1);
-            localStorage.setItem('quill_favorites', JSON.stringify(favs));
-            loadFavoritesList();
-        }
+        function deleteFav(index) { let favs = JSON.parse(localStorage.getItem('quill_favorites') || '[]'); favs.splice(index, 1); localStorage.setItem('quill_favorites', JSON.stringify(favs)); loadFavoritesList(); }
 
-        // ================== الوسائط ==================
+        // ================== الوسائط والمحلي ==================
         function handleFileSelect(e) {
             const files = e.target.files;
             for(let i=0; i<files.length; i++) {
-                const file = files[i];
-                const isVideo = file.type.startsWith('video/');
-                selectedMedia.push({
-                    file: file, name: file.name, mimeType: file.type, mediaType: isVideo ? 'video' : 'image',
-                    durationSeconds: isVideo ? 15 : 8, url: URL.createObjectURL(file), layoutX: 0, layoutY: 0, layoutW: 1, layoutH: 1
-                });
+                const file = files[i]; const isVideo = file.type.startsWith('video/');
+                selectedMedia.push({ file: file, name: file.name, mimeType: file.type, mediaType: isVideo ? 'video' : 'image', durationSeconds: isVideo ? 15 : 8, url: URL.createObjectURL(file), layoutX: 0, layoutY: 0, layoutW: 1, layoutH: 1 });
             }
             selectedMediaIndex = selectedMedia.length - 1; refreshUI(); e.target.value = ''; 
         }
@@ -662,10 +919,7 @@
             let url = document.getElementById('urlInput').value.trim();
             if(url) {
                 if(!url.startsWith('http')) url = 'https://' + url;
-                selectedMedia.push({
-                    file: null, name: "رابط ويب", mimeType: "text/html", mediaType: "url",
-                    durationSeconds: 15, url: url, layoutX: 0, layoutY: 0, layoutW: 1, layoutH: 1
-                });
+                selectedMedia.push({ file: null, name: "رابط ويب", mimeType: "text/html", mediaType: "url", durationSeconds: 15, url: url, layoutX: 0, layoutY: 0, layoutW: 1, layoutH: 1 });
                 selectedMediaIndex = selectedMedia.length - 1; document.getElementById('urlModal').style.display = 'none'; document.getElementById('urlInput').value = ''; refreshUI();
             }
         }
@@ -677,13 +931,13 @@
                 div.className = 'media-item' + (index === selectedMediaIndex ? ' active' : '');
                 div.onclick = () => { selectedMediaIndex = index; refreshUI(); };
                 
-                const thumb = document.createElement('div');
-                thumb.className = 'media-thumb';
+                const thumb = document.createElement('div'); thumb.className = 'media-thumb';
                 if (item.mediaType === 'url') thumb.innerHTML = '🌐';
                 else if (item.mediaType === 'image') thumb.innerHTML = `<img src="${item.url}">`;
                 else thumb.innerHTML = `<video src="${item.url}#t=1"></video>`;
                 
-                div.innerHTML = `<div class="media-thumb">${thumb.innerHTML}</div>
+                div.innerHTML = `<div style="cursor:grab; font-size:20px; color:var(--text-secondary);">☰</div>
+                <div class="media-thumb">${thumb.innerHTML}</div>
                 <div class="media-info"><div class="media-name">${item.name}</div><div class="media-type">${item.mediaType==='url'?'رابط ويب':(item.mediaType==='image'?'صورة':'فيديو')}</div></div>
                 <div class="media-actions"><button class="delete-btn" onclick="event.stopPropagation(); selectedMedia.splice(${index},1); if(selectedMediaIndex>=selectedMedia.length) selectedMediaIndex=selectedMedia.length-1; refreshUI();">✖</button></div>`;
                 mediaList.appendChild(div);
@@ -711,109 +965,52 @@
 
         function setupLayoutEditor() {
             const handle = document.getElementById('resizeHandle');
-            let isDragging = false, isResizing = false;
-            let startX, startY, startLeft, startTop, startWidth, startHeight;
+            let isDragging = false, isResizing = false; let startX, startY, startLeft, startTop, startWidth, startHeight;
             const getEvt = e => e.touches ? e.touches[0] : e;
-            
             handle.addEventListener('mousedown', startResize); handle.addEventListener('touchstart', startResize, {passive: false});
             function startResize(e) { e.preventDefault(); e.stopPropagation(); isResizing = true; const evt = getEvt(e); startX = evt.clientX; startY = evt.clientY; startWidth = mediaBox.offsetWidth; startHeight = mediaBox.offsetHeight; document.addEventListener('mousemove', doResize); document.addEventListener('mouseup', stopAction); document.addEventListener('touchmove', doResize, {passive: false}); document.addEventListener('touchend', stopAction); }
             function doResize(e) { if (!isResizing) return; e.preventDefault(); const evt = getEvt(e); let newWidth = startWidth + (evt.clientX - startX); let newHeight = startHeight + (evt.clientY - startY); const pw = previewArea.clientWidth; const ph = previewArea.clientHeight; const left = mediaBox.offsetLeft; const top = mediaBox.offsetTop; if(newWidth + left > pw) newWidth = pw - left; if(newHeight + top > ph) newHeight = ph - top; if(newWidth < 40) newWidth = 40; if(newHeight < 40) newHeight = 40; mediaBox.style.width = newWidth + 'px'; mediaBox.style.height = newHeight + 'px'; saveLayout(); }
-            
             mediaBox.addEventListener('mousedown', startDrag); mediaBox.addEventListener('touchstart', startDrag, {passive: false});
             function startDrag(e) { if(e.target === handle) return; e.preventDefault(); isDragging = true; const evt = getEvt(e); startX = evt.clientX; startY = evt.clientY; startLeft = mediaBox.offsetLeft; startTop = mediaBox.offsetTop; document.addEventListener('mousemove', doDrag); document.addEventListener('mouseup', stopAction); document.addEventListener('touchmove', doDrag, {passive: false}); document.addEventListener('touchend', stopAction); }
             function doDrag(e) { if (!isDragging) return; e.preventDefault(); const evt = getEvt(e); let newLeft = startLeft + (evt.clientX - startX); let newTop = startTop + (evt.clientY - startY); const pw = previewArea.clientWidth; const ph = previewArea.clientHeight; const w = mediaBox.offsetWidth; const h = mediaBox.offsetHeight; if(newLeft < 0) newLeft = 0; if(newTop < 0) newTop = 0; if(newLeft + w > pw) newLeft = pw - w; if(newTop + h > ph) newTop = ph - h; mediaBox.style.left = newLeft + 'px'; mediaBox.style.top = newTop + 'px'; saveLayout(); }
-            
             function stopAction() { isDragging = false; isResizing = false; document.removeEventListener('mousemove', doDrag); document.removeEventListener('mousemove', doResize); document.removeEventListener('mouseup', stopAction); document.removeEventListener('touchmove', doDrag); document.removeEventListener('touchmove', doResize); document.removeEventListener('touchend', stopAction); }
             function saveLayout() { if(selectedMediaIndex >= 0) { const item = selectedMedia[selectedMediaIndex]; const pw = previewArea.clientWidth; const ph = previewArea.clientHeight; item.layoutX = mediaBox.offsetLeft / pw; item.layoutY = mediaBox.offsetTop / ph; item.layoutW = mediaBox.offsetWidth / pw; item.layoutH = mediaBox.offsetHeight / ph; } }
         }
 
-        // ================== الإرسال والتحذير المتعدد ==================
-        function checkMismatchBeforeSend() {
-            if (selectedScreens.length === 0) { alert("الرجاء تحديد روبوت واحد على الأقل!"); return showRobotsModal(); }
-            if (selectedMedia.length === 0) return alert("قم بإضافة وسائط أو روابط للإرسال");
-
-            if (selectedScreens.length > 1) {
-                // التحقق من اختلاف المحتوى الحالي للشاشات المحددة
-                let firstBatchId = selectedScreens[0].lastBatchId;
-                let isMismatch = false;
-                for (let i = 1; i < selectedScreens.length; i++) {
-                    if (selectedScreens[i].lastBatchId !== firstBatchId) {
-                        isMismatch = true;
-                        break;
-                    }
-                }
-                
-                if (isMismatch) {
-                    document.getElementById('mismatchWarningModal').style.display = 'flex';
-                    return; // إيقاف الإرسال حتى يؤكد
-                }
-            }
-            
-            // إذا كان محتوى واحد أو شاشة واحدة، أرسل فوراً
-            proceedSendToScreens();
+        // ================== تحكم الشاشة والتجميد ==================
+        function renderRemoteScreensList() {
+            const list = document.getElementById('remoteScreensList');
+            list.innerHTML = '';
+            if(screens.length === 0) { list.innerHTML = `<div style="text-align:center; color:var(--text-secondary); margin-top:50px;">لا يوجد روبوتات مسجلة</div>`; return; }
+            screens.forEach(s => {
+                const div = document.createElement('div'); div.className = 'media-item';
+                div.innerHTML = `<div style="font-size:24px; margin:0 10px;">📱</div><div style="flex:1;"><div style="font-size:16px;">${s.name} ${s.isFrozen ? '❄️' : ''}</div><div class="robot-preview-text" style="font-size:12px;">محتوى: ${s.lastContentText || 'غير معروف'}</div></div>`;
+                div.onclick = () => { controlTargetScreenId = s.id; document.getElementById('remoteControlTitle').innerText = s.name; 
+                    const freezeBtn = document.getElementById('freezeBtn');
+                    freezeBtn.innerText = s.isFrozen ? "فك التجميد 🔓" : "تجميد الشاشة ❄️";
+                    freezeBtn.style.backgroundColor = s.isFrozen ? "var(--primary)" : "var(--danger)";
+                    showPage('remoteControlPage'); 
+                };
+                list.appendChild(div);
+            });
         }
 
-        async function proceedSendToScreens() {
-            document.getElementById('mismatchWarningModal').style.display = 'none';
-            const overlay = document.getElementById('loadingOverlay');
-            const loadingStatus = document.getElementById('loadingStatus');
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            const senderName = getDeviceName(); // جلب اسم المرسل
-            
-            overlay.style.display = 'flex'; progressBar.style.width = '0%'; progressText.innerText = '0%';
-            const batchId = Date.now().toString(); const batchTotal = selectedMedia.length; const totalTasks = batchTotal * selectedScreens.length; let currentTask = 0;
-            
-            try {
-                for (let s of selectedScreens) {
-                    for (let i = 0; i < selectedMedia.length; i++) {
-                        currentTask++;
-                        loadingStatus.innerText = `جاري إرسال (${selectedMedia[i].name}) إلى ${s.name} ...`;
-                        const item = selectedMedia[i]; const cid = db.collection('screen_content').doc().id;
-                        const baseProgress = ((currentTask - 1) / totalTasks) * 100;
-                        
-                        if (item.mediaType === 'url') {
-                            await db.collection("screen_content").doc(cid).set({
-                                screenId: s.id, storagePath: "", mediaType: "url", senderName: senderName, status: "pending", originalFileName: item.name,
-                                durationSeconds: item.durationSeconds, batchId: batchId, batchOrder: i, batchTotal: batchTotal, replacePlaylist: true,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(), layoutX: item.layoutX, layoutY: item.layoutY, layoutW: item.layoutW, layoutH: item.layoutH, url: item.url
-                            });
-                            const p = Math.round((currentTask / totalTasks) * 100); progressBar.style.width = p + '%'; progressText.innerText = p + '%';
-                        } else {
-                            const ext = item.name.split('.').pop(); const path = `uploads/${s.id}/${cid}.${ext}`; const ref = storage.ref().child(path);
-                            const meta = { contentType: item.mimeType || (item.mediaType === 'image'?'image/jpeg':'video/mp4') };
-                            const uploadTask = ref.put(item.file, meta);
-                            await new Promise((resolve, reject) => {
-                                uploadTask.on('state_changed', 
-                                    (snapshot) => { const fileProgress = (snapshot.bytesTransferred / snapshot.totalBytes); const totalP = Math.round(baseProgress + (fileProgress * (100 / totalTasks))); progressBar.style.width = totalP + '%'; progressText.innerText = totalP + '%'; }, 
-                                    (error) => reject(error), () => resolve()
-                                );
-                            });
-                            await db.collection("screen_content").doc(cid).set({
-                                screenId: s.id, storagePath: path, mediaType: item.mediaType, senderName: senderName, status: "pending", originalFileName: item.name,
-                                durationSeconds: item.durationSeconds, batchId: batchId, batchOrder: i, batchTotal: batchTotal, replacePlaylist: true,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(), layoutX: item.layoutX, layoutY: item.layoutY, layoutW: item.layoutW, layoutH: item.layoutH
-                            });
-                        }
-                    }
-                }
-                progressBar.style.width = '100%'; progressText.innerText = '100%'; loadingStatus.innerText = "اكتمل الإرسال بنجاح!";
-                
-                // تحديث آخر محتوى في الذاكرة لكي لا يظهر تحذير مرة ثانية إذا ضغط إرسال مرتين
-                selectedScreens.forEach(s => {
-                    s.lastBatchId = batchId;
-                    s.lastContentText = `الآن أُرسل: ${selectedMedia[0].name} ...`;
-                });
-
-                setTimeout(() => { overlay.style.display = 'none'; selectedMedia = []; selectedMediaIndex = -1; refreshUI(); loadScreens(); }, 1000);
-            } catch (e) {
-                alert("حدث خطأ أثناء الرفع: " + e.message); overlay.style.display = 'none';
-            }
-        }
+        function sendControlCmd(cmd) { if(!controlTargetScreenId) return; db.collection("screens").doc(controlTargetScreenId).set({ command: cmd }, { merge: true }).catch(e => alert("فشل الإرسال: " + e.message)); }
         
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
+        async function toggleFreeze() {
+            if(!controlTargetScreenId) return;
+            const screenObj = screens.find(s => s.id === controlTargetScreenId);
+            const newState = !screenObj.isFrozen;
+            try {
+                await db.collection("screens").doc(controlTargetScreenId).set({ isFrozen: newState }, { merge: true });
+                screenObj.isFrozen = newState;
+                const freezeBtn = document.getElementById('freezeBtn');
+                freezeBtn.innerText = newState ? "فك التجميد 🔓" : "تجميد الشاشة ❄️";
+                freezeBtn.style.backgroundColor = newState ? "var(--primary)" : "var(--danger)";
+                alert(newState ? "تم تجميد الشاشة بنجاح! لا يمكن الخروج منها." : "تم فك التجميد، الشاشة الآن متاحة.");
+            } catch(e) { alert("خطأ: " + e.message); }
         }
+
     </script>
 </body>
 </html>
