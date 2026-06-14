@@ -1,11 +1,11 @@
-// ضَع إعدادات Firebase الخاصة بالويب هنا
+// إعدادات Firebase
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyClNv4LaNoGWCVWzgEllo-9cZ1qvlBlEUU",
+    authDomain: "quill-bot-screen-13ecb.firebaseapp.com",
+    projectId: "quill-bot-screen-13ecb",
+    storageBucket: "quill-bot-screen-13ecb.firebasestorage.app",
+    messagingSenderId: "527652332387",
+    appId: "1:527652332387:web:8ce6416e124e42929b2956"
 };
 
 // تهيئة Firebase
@@ -31,8 +31,56 @@ const emptyPreview = document.getElementById('emptyPreview');
 const durationSlider = document.getElementById('durationSlider');
 const durationLabel = document.getElementById('durationLabel');
 
+// ================== PWA Install Prompt ==================
+let deferredPrompt;
+const installModal = document.getElementById('installModal');
+const installAppBtn = document.getElementById('installAppBtn');
+const closeInstallBtn = document.getElementById('closeInstallBtn');
+const installMessage = document.getElementById('installMessage');
+
+// كشف نظام iOS
+const isIos = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+};
+const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installMessage.innerText = "قم بتثبيت التطبيق على جهازك للوصول السريع وتجربة أفضل.";
+    installAppBtn.style.display = 'block';
+    
+    // إظهار الرسالة للمستخدم إذا لم يثبته بعد
+    if(!localStorage.getItem('installPromptClosed')) {
+        installModal.style.display = 'flex';
+    }
+});
+
+installAppBtn.addEventListener('click', async () => {
+    installModal.style.display = 'none';
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+    }
+});
+
+closeInstallBtn.addEventListener('click', () => {
+    installModal.style.display = 'none';
+    localStorage.setItem('installPromptClosed', 'true');
+});
+
 // ================== تهيئة التطبيق ==================
 document.addEventListener('DOMContentLoaded', () => {
+    // إذا كان النظام iOS ولم يتم التثبيت
+    if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installPromptClosed')) {
+        installMessage.innerText = "لتثبيت التطبيق، اضغط على زر المشاركة بالأسفل ثم اختر 'إضافة إلى الصفحة الرئيسية' (Add to Home Screen).";
+        installAppBtn.style.display = 'none';
+        installModal.style.display = 'flex';
+    }
+
     loadScreens();
 
     document.getElementById('refreshScreensBtn').onclick = loadScreens;
@@ -64,8 +112,7 @@ function loadScreens() {
         snap.forEach((doc) => screens.push({ id: doc.id, name: doc.data().screenName || doc.id }));
         
         if (screens.length === 0) {
-            selectedRobotsText.innerText = "لا يوجد روبوتات";
-            alert("افتح تطبيق الشاشة (الروبوت) أولاً");
+            selectedRobotsText.innerText = "لا توجد شاشات مسجلة";
         } else {
             selectedScreens = [screens[0]]; // افتراضياً نختار الأول
             selectedRobotsText.innerText = screens.map(s => s.name).join(' · ');
@@ -129,7 +176,9 @@ function refreshUI() {
         
         const thumb = document.createElement('div');
         thumb.className = 'media-thumb';
-        if (item.mediaType === 'url') thumb.innerText = '🌐';
+        if (item.mediaType === 'url') {
+            thumb.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>';
+        }
         else if (item.mediaType === 'image') thumb.innerHTML = `<img src="${item.url}">`;
         else thumb.innerHTML = `<video src="${item.url}#t=1"></video>`; // t=1 for thumb
         
@@ -141,7 +190,7 @@ function refreshUI() {
         actions.className = 'media-actions';
         const delBtn = document.createElement('button');
         delBtn.className = 'delete-btn';
-        delBtn.innerText = '🗑';
+        delBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
         delBtn.onclick = (e) => {
             e.stopPropagation();
             selectedMedia.splice(index, 1);
