@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quill DS</title>
+    <title>تطبيق الإرسال Quill</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#070C10">
     <link rel="icon" href="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg">
@@ -35,8 +35,9 @@
             padding: 15px 20px;
             background-color: #111A22;
             border-bottom: 1px solid #1F2A35;
+            cursor: pointer;
         }
-        .robots-info { display: flex; align-items: center; gap: 12px; }
+        .robots-info { display: flex; align-items: center; gap: 12px; flex: 1; }
         .icon { font-size: 24px; display: flex; align-items: center; color:#00A878; }
         .label { font-size: 12px; color: #8899A6; }
         .value { font-size: 15px; font-weight: bold; }
@@ -130,40 +131,67 @@
 
         /* Modal & Loader */
         .loading-overlay {
-            position: absolute; inset: 0; background-color: rgba(7, 12, 16, 0.9);
+            position: absolute; inset: 0; background-color: rgba(7, 12, 16, 0.95);
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 100;
         }
-        .loader { border: 4px solid #1F2A35; border-top: 4px solid #00A878; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* شريط التحميل */
+        .progress-container {
+            width: 80%; max-width: 300px; background-color: #1F2A35; border-radius: 10px; overflow: hidden; height: 10px; margin-top: 15px;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background-color: #00A878; transition: width 0.2s;
+        }
+        .progress-text { font-size: 18px; font-weight: bold; margin-top: 5px; color: #00A878; }
+        .loading-status { font-size: 14px; color: #8899A6; margin-top: 5px; }
 
         .modal {
-            position: absolute; inset: 0; background-color: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 50;
+            position: absolute; inset: 0; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50;
         }
         .modal-content {
-            background-color: #111A22; padding: 20px; border-radius: 16px; width: 90%; max-width: 320px;
+            background-color: #111A22; padding: 20px; border-radius: 16px; width: 90%; max-width: 320px; max-height: 80vh; display: flex; flex-direction: column;
         }
         .modal-content.text-center { text-align: center; }
         .install-icon { width: 64px; height: 64px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .modal-content h3 { margin-bottom: 15px; font-size: 18px; }
-        .modal-content input {
+        .modal-content input[type="url"] {
             width: 100%; padding: 12px; background-color: #0a1014; border: 1px solid #1F2A35; color: white; border-radius: 8px; margin-bottom: 20px;
         }
-        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
         .modal-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
         .btn-secondary { background-color: #1F2A35; color: white; }
         .btn-primary { background-color: #00A878; color: white; }
+        
+        /* قائمة اختيار الروبوتات */
+        .robots-list {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;
+        }
+        .robot-select-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 12px;
+            background-color: #0a1014; border-radius: 8px; border: 1px solid #1F2A35; cursor: pointer;
+        }
+        .robot-select-item.selected {
+            border-color: #00A878; background-color: rgba(0, 168, 120, 0.1);
+        }
+        .robot-checkbox {
+            width: 20px; height: 20px; border-radius: 4px; border: 2px solid #8899A6;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .robot-select-item.selected .robot-checkbox {
+            background-color: #00A878; border-color: #00A878;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <!-- شريط الروبوتات -->
-        <header class="header">
+        <header class="header" id="headerRobots" title="تحديد الروبوتات">
             <div class="robots-info">
                 <span class="icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                 </span>
                 <div class="text">
-                    <div class="label">الروبوتات المحددة</div>
+                    <div class="label">الروبوتات المحددة (اضغط للتغيير)</div>
                     <div id="selectedRobotsText" class="value">جاري البحث...</div>
                 </div>
             </div>
@@ -213,14 +241,17 @@
         </div>
 
         <!-- قائمة الوسائط المحددة -->
-        <div class="media-list" id="mediaList">
-            <!-- سيتم إضافة العناصر هنا عبر الجافاسكريبت -->
-        </div>
+        <div class="media-list" id="mediaList"></div>
 
         <!-- طبقة التحميل -->
         <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-            <div class="loader"></div>
-            <div id="loadingText">جاري المعالجة...</div>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00A878" stroke-width="2" style="margin-bottom:10px;"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+            <div id="loadingText" style="font-size: 18px; font-weight:bold;">جاري الإرسال...</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="progressText" class="progress-text">0%</div>
+            <div id="loadingStatus" class="loading-status">تحضير الملفات</div>
         </div>
         
         <!-- نافذة إضافة رابط -->
@@ -231,6 +262,19 @@
                 <div class="modal-actions">
                     <button id="cancelUrlBtn" class="btn-secondary">إلغاء</button>
                     <button id="addUrlBtn" class="btn-primary">إضافة</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة تحديد الروبوتات -->
+        <div id="robotsModal" class="modal" style="display: none;">
+            <div class="modal-content" style="height: 60vh;">
+                <h3>تحديد الروبوتات</h3>
+                <div id="robotsList" class="robots-list">
+                    <!-- سيتم إضافة الروبوتات هنا -->
+                </div>
+                <div class="modal-actions">
+                    <button id="closeRobotsBtn" class="btn-primary">موافق</button>
                 </div>
             </div>
         </div>
@@ -287,6 +331,8 @@
         const emptyPreview = document.getElementById('emptyPreview');
         const durationSlider = document.getElementById('durationSlider');
         const durationLabel = document.getElementById('durationLabel');
+        const robotsModal = document.getElementById('robotsModal');
+        const robotsListContainer = document.getElementById('robotsList');
 
         // ================== PWA Install Prompt ==================
         let deferredPrompt;
@@ -295,7 +341,6 @@
         const closeInstallBtn = document.getElementById('closeInstallBtn');
         const installMessage = document.getElementById('installMessage');
 
-        // كشف نظام iOS
         const isIos = () => {
           const userAgent = window.navigator.userAgent.toLowerCase();
           return /iphone|ipad|ipod/.test(userAgent);
@@ -337,7 +382,14 @@
 
             loadScreens();
 
-            document.getElementById('refreshScreensBtn').onclick = loadScreens;
+            document.getElementById('refreshScreensBtn').onclick = (e) => {
+                e.stopPropagation();
+                loadScreens();
+            };
+            
+            document.getElementById('headerRobots').onclick = showRobotsModal;
+            document.getElementById('closeRobotsBtn').onclick = () => robotsModal.style.display = 'none';
+            
             document.getElementById('addMediaBtn').onclick = () => document.getElementById('fileInput').click();
             document.getElementById('fileInput').onchange = handleFileSelect;
             document.getElementById('addUrlDialogBtn').onclick = () => document.getElementById('urlModal').style.display = 'flex';
@@ -364,14 +416,81 @@
                 
                 if (screens.length === 0) {
                     selectedRobotsText.innerText = "لا توجد شاشات مسجلة";
+                    selectedScreens = [];
                 } else {
-                    selectedScreens = [screens[0]]; 
-                    selectedRobotsText.innerText = screens.map(s => s.name).join(' · ');
+                    // الاحتفاظ بالاختيارات السابقة إن وُجدت
+                    if(selectedScreens.length === 0) {
+                        selectedScreens = [screens[0]];
+                    } else {
+                        // تصفية الشاشات المحذوفة
+                        selectedScreens = selectedScreens.filter(sel => screens.some(s => s.id === sel.id));
+                        if(selectedScreens.length === 0) selectedScreens = [screens[0]];
+                    }
+                    updateSelectedRobotsText();
                 }
             }).catch(err => {
                 selectedRobotsText.innerText = "خطأ في الاتصال";
                 console.error(err);
             });
+        }
+        
+        function updateSelectedRobotsText() {
+            if(selectedScreens.length === 0) {
+                selectedRobotsText.innerText = "لا يوجد روبوت محدد";
+            } else if (selectedScreens.length === screens.length && screens.length > 1) {
+                selectedRobotsText.innerText = `الكل (${screens.length} روبوتات)`;
+            } else {
+                selectedRobotsText.innerText = selectedScreens.map(s => s.name).join(' · ');
+            }
+        }
+        
+        function showRobotsModal() {
+            robotsListContainer.innerHTML = '';
+            
+            // إضافة خيار "تحديد الكل"
+            const selectAllDiv = document.createElement('div');
+            const isAllSelected = selectedScreens.length === screens.length && screens.length > 0;
+            selectAllDiv.className = 'robot-select-item' + (isAllSelected ? ' selected' : '');
+            selectAllDiv.innerHTML = `
+                <div style="font-weight:bold; color:#00A878;">تحديد الكل</div>
+                <div class="robot-checkbox">${isAllSelected ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}</div>
+            `;
+            selectAllDiv.onclick = () => {
+                if (selectedScreens.length === screens.length) {
+                    selectedScreens = []; // الغاء الكل
+                } else {
+                    selectedScreens = [...screens]; // تحديد الكل
+                }
+                updateSelectedRobotsText();
+                showRobotsModal(); // تحديث النافذة
+            };
+            robotsListContainer.appendChild(selectAllDiv);
+            
+            // إضافة الروبوتات
+            screens.forEach(s => {
+                const isSelected = selectedScreens.some(sel => sel.id === s.id);
+                const div = document.createElement('div');
+                div.className = 'robot-select-item' + (isSelected ? ' selected' : '');
+                
+                div.innerHTML = `
+                    <div>${s.name}</div>
+                    <div class="robot-checkbox">${isSelected ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}</div>
+                `;
+                
+                div.onclick = () => {
+                    if (isSelected) {
+                        selectedScreens = selectedScreens.filter(sel => sel.id !== s.id);
+                    } else {
+                        selectedScreens.push(s);
+                    }
+                    updateSelectedRobotsText();
+                    showRobotsModal(); // تحديث النافذة
+                };
+                
+                robotsListContainer.appendChild(div);
+            });
+            
+            robotsModal.style.display = 'flex';
         }
 
         // ================== الوسائط والمقاطع ==================
@@ -597,24 +716,37 @@
 
         // ================== الإرسال إلى الشاشات ==================
         async function sendToScreens() {
-            if (selectedScreens.length === 0) return alert("الرجاء اختيار روبوت أولاً");
-            if (selectedMedia.length === 0) return alert("قم بإضافة وسائط للإرسال");
+            if (selectedScreens.length === 0) {
+                alert("الرجاء تحديد روبوت واحد على الأقل!");
+                return showRobotsModal();
+            }
+            if (selectedMedia.length === 0) return alert("قم بإضافة وسائط أو روابط للإرسال");
 
             const overlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
+            const loadingStatus = document.getElementById('loadingStatus');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
             overlay.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressText.innerText = '0%';
             
             const batchId = Date.now().toString();
             const batchTotal = selectedMedia.length;
-            let done = 0;
+            const totalTasks = batchTotal * selectedScreens.length;
+            let currentTask = 0;
             
-            loadingText.innerText = `0 / ${batchTotal} جاري المعالجة`;
-
             try {
                 for (let s of selectedScreens) {
                     for (let i = 0; i < selectedMedia.length; i++) {
+                        currentTask++;
+                        loadingStatus.innerText = `جاري إرسال (${selectedMedia[i].name}) إلى ${s.name} ...`;
+                        
                         const item = selectedMedia[i];
                         const cid = db.collection('screen_content').doc().id;
+                        
+                        // حساب التقدم المبدئي للملف
+                        const baseProgress = ((currentTask - 1) / totalTasks) * 100;
                         
                         if (item.mediaType === 'url') {
                             await db.collection("screen_content").doc(cid).set({
@@ -629,18 +761,38 @@
                                 batchOrder: i,
                                 batchTotal: batchTotal,
                                 replacePlaylist: true,
-                                createdAtDeviceTime: Date.now(),
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                                 layoutX: item.layoutX, layoutY: item.layoutY,
                                 layoutW: item.layoutW, layoutH: item.layoutH,
                                 url: item.url
                             });
+                            
+                            const p = Math.round((currentTask / totalTasks) * 100);
+                            progressBar.style.width = p + '%';
+                            progressText.innerText = p + '%';
+                            
                         } else {
                             const ext = item.name.split('.').pop();
                             const path = `uploads/${s.id}/${cid}.${ext}`;
                             const ref = storage.ref().child(path);
-                            
                             const meta = { contentType: item.mimeType || (item.mediaType === 'image'?'image/jpeg':'video/mp4') };
-                            await ref.put(item.file, meta);
+                            
+                            // رفع الملف مع تتبع التقدم
+                            const uploadTask = ref.put(item.file, meta);
+                            
+                            await new Promise((resolve, reject) => {
+                                uploadTask.on('state_changed', 
+                                    (snapshot) => {
+                                        const fileProgress = (snapshot.bytesTransferred / snapshot.totalBytes);
+                                        // التقدم الإجمالي هو تقدم الملفات السابقة + نسبة تقدم هذا الملف
+                                        const totalP = Math.round(baseProgress + (fileProgress * (100 / totalTasks)));
+                                        progressBar.style.width = totalP + '%';
+                                        progressText.innerText = totalP + '%';
+                                    }, 
+                                    (error) => reject(error), 
+                                    () => resolve()
+                                );
+                            });
                             
                             await db.collection("screen_content").doc(cid).set({
                                 screenId: s.id,
@@ -654,35 +806,30 @@
                                 batchOrder: i,
                                 batchTotal: batchTotal,
                                 replacePlaylist: true,
-                                createdAtDeviceTime: Date.now(),
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                                 layoutX: item.layoutX, layoutY: item.layoutY,
                                 layoutW: item.layoutW, layoutH: item.layoutH
                             });
                         }
-                        
-                        done++;
-                        loadingText.innerText = `${done} / ${batchTotal * selectedScreens.length} تم الإرسال`;
                     }
                 }
                 
-                alert("تم إرسال الملفات بنجاح! 🚀");
-                selectedMedia = [];
-                selectedMediaIndex = -1;
-                refreshUI();
+                progressBar.style.width = '100%';
+                progressText.innerText = '100%';
+                loadingStatus.innerText = "اكتمل الإرسال بنجاح!";
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    selectedMedia = [];
+                    selectedMediaIndex = -1;
+                    refreshUI();
+                }, 1000);
                 
             } catch (e) {
                 console.error(e);
                 alert("حدث خطأ أثناء الرفع: " + e.message);
-            } finally {
                 overlay.style.display = 'none';
             }
-        }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-            });
         }
     </script>
 </body>
