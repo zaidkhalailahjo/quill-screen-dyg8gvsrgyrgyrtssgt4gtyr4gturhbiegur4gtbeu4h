@@ -1,1 +1,18 @@
-1
+{
+    "name": "تطبيق الإرسال Quill",
+    "short_name": "Quill Sender",
+    "description": "تطبيق ويب لإرسال الصور والفيديوهات والروابط إلى الشاشات والروبوتات الخاصة بك",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#070C10",
+    "theme_color": "#070C10",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg",
+            "purpose": "any maskable"
+        }
+    ]
+}
