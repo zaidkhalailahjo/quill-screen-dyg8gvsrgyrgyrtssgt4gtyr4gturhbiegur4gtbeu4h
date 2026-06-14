@@ -1,14 +1,15 @@
-const CACHE_NAME = 'quill-sender-v1';
+const CACHE_NAME = 'quill-sender-v2';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/style.css',
-    '/app.js',
     '/manifest.json'
 ];
 
 // تثبيت الـ Service Worker وحفظ الملفات الأساسية في الكاش
 self.addEventListener('install', event => {
+    // التخطي الفوري لتثبيت النسخة الجديدة دون انتظار
+    self.skipWaiting();
+    
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
@@ -43,6 +44,9 @@ self.addEventListener('activate', event => {
                     }
                 })
             );
+        }).then(() => {
+            // تفعيل النسخة الجديدة فوراً للعملاء
+            return self.clients.claim();
         })
     );
 });
