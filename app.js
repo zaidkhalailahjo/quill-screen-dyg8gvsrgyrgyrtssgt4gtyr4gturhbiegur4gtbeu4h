@@ -6,7 +6,7 @@ const firebaseConfig = {
     storageBucket: "quill-bot-screen-13ecb.firebasestorage.app",
     messagingSenderId: "527652332387",
     appId: "1:527652332387:web:8ce6416e124e42929b2956"
-};
+};5
 
 // تهيئة Firebase
 firebase.initializeApp(firebaseConfig);
