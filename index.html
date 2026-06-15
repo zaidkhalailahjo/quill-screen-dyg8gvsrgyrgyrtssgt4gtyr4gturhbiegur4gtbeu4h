@@ -556,6 +556,12 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
             <button id="unfreezeBtn" class="add-btn" title="فك التجميد (أدمن فقط)" style="display:none; color: #00c8be; border-color: #00c8be;">
                 🔓
             </button>
+            <button id="portraitBtn" class="add-btn" title="الوضع الطولي" style="display:none; color: #00c8be; border-color: #00c8be;">
+                📱
+            </button>
+            <button id="landscapeBtn" class="add-btn" title="الوضع العرضي" style="display:none; color: #00c8be; border-color: #00c8be;">
+                🖥️
+            </button>
 
             <button id="sendBtn" class="send-btn" style="flex: 1; min-width: 150px;">
                 إرسال للشاشة
@@ -977,6 +983,8 @@ function setupAuthAndMenu() {
             document.getElementById('menuAdminBtn').style.display = 'block';
             document.getElementById('freezeBtn').style.display = 'block';
             document.getElementById('unfreezeBtn').style.display = 'block';
+            document.getElementById('portraitBtn').style.display = 'block';
+            document.getElementById('landscapeBtn').style.display = 'block';
         }
         loadScreens();
         
@@ -1103,6 +1111,19 @@ function setupAuthAndMenu() {
         selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({isFrozen: true}, {merge: true}));
         alert("تم إرسال أمر التجميد");
     };
+    
+    document.getElementById('portraitBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({orientation: 'portrait'}, {merge: true}));
+        alert("تم تغيير الوضع إلى طولي");
+    };
+
+    document.getElementById('landscapeBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({orientation: 'landscape'}, {merge: true}));
+        alert("تم تغيير الوضع إلى عرضي");
+    };
+
     document.getElementById('unfreezeBtn').onclick = () => {
         if (selectedScreens.length === 0) return alert("اختر شاشة");
         selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({isFrozen: false}, {merge: true}));
