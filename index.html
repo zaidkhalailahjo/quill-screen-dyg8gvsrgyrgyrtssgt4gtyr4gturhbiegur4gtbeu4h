@@ -405,8 +405,10 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
             <h2>تسجيل الدخول</h2>
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
             <div style="position: relative;">
-                <input type="password" id="loginPassword" placeholder="كلمة المرور" style="width: 100%;" />
-                <span id="toggleLoginPass" style="position: absolute; left: 10px; top: 12px; cursor: pointer; font-size: 14px; color: var(--text-secondary);">إظهار</span>
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" style="width: 100%; padding-left: 40px;" />
+                <span id="toggleLoginPass" style="position: absolute; left: 12px; top: 26px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
             </div>
             <button id="loginBtn" class="btn-primary" style="margin-top: 10px;">دخول</button>
             <p id="loginError" style="color: #ff4d4d; margin-top: 10px; display: none;"></p>
@@ -424,8 +426,10 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
                 <h3>إضافة حساب جديد</h3>
                 <input type="email" id="newAccEmail" placeholder="البريد الإلكتروني للمستخدم" />
                 <div style="position: relative;">
-                    <input type="password" id="newAccPass" placeholder="كلمة المرور" style="width: 100%;" />
-                    <span id="toggleNewPass" style="position: absolute; left: 10px; top: 12px; cursor: pointer; font-size: 14px; color: var(--text-secondary);">إظهار</span>
+                    <input type="password" id="newAccPass" placeholder="كلمة المرور" style="width: 100%; padding-left: 40px;" />
+                    <span id="toggleNewPass" style="position: absolute; left: 12px; top: 26px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
                 </div>
                 <select id="newAccRole" style="width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--divider);">
                     <option value="client">Client - عميل مخصص (محدد الشاشات)</option>
@@ -712,28 +716,49 @@ function setupAuthAndMenu() {
     const adminView = document.getElementById('adminView');
     
     // تسجيل الدخول
-    document.getElementById('loginBtn').onclick = async () => {
+    document.getElementById('loginBtn').onclick = async function() {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
         const err = document.getElementById('loginError');
+        const btn = this;
+        
+        err.style.display = 'none';
+        
+        if(!email || !pass) {
+            err.style.display = 'block';
+            err.innerText = "يرجى إدخال البريد الإلكتروني وكلمة المرور";
+            return;
+        }
+
+        const originalText = btn.innerText;
+        btn.innerHTML = '<div class="loader" style="width: 20px; height: 20px; border-width: 2px;"></div>';
+        btn.disabled = true;
+        
         try {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
             await auth.signInWithEmailAndPassword(email, pass);
         } catch (e) {
             err.style.display = 'block';
             err.innerText = "فشل الدخول: " + e.message;
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
     };
     
     // إظهار وإخفاء كلمة المرور
+    const eyeOpen = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    const eyeClosed = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
     document.getElementById('toggleLoginPass').onclick = function() {
         const p = document.getElementById('loginPassword');
-        if(p.type === 'password') { p.type = 'text'; this.innerText = 'إخفاء'; }
-        else { p.type = 'password'; this.innerText = 'إظهار'; }
+        if(p.type === 'password') { p.type = 'text'; this.innerHTML = eyeClosed; }
+        else { p.type = 'password'; this.innerHTML = eyeOpen; }
     };
     document.getElementById('toggleNewPass').onclick = function() {
         const p = document.getElementById('newAccPass');
-        if(p.type === 'password') { p.type = 'text'; this.innerText = 'إخفاء'; }
-        else { p.type = 'password'; this.innerText = 'إظهار'; }
+        if(p.type === 'password') { p.type = 'text'; this.innerHTML = eyeClosed; }
+        else { p.type = 'password'; this.innerHTML = eyeOpen; }
     };
     
     auth.onAuthStateChanged(async user => {
