@@ -437,9 +437,10 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
     </div>
 
     <!-- شاشة تسجيل الدخول -->
-    <div id="loginView" class="view-screen" style="display: flex;">
+    <div id="loginView" class="view-screen" style="justify-content: center; align-items: center; display: flex;">
         <div class="login-card">
-            <h2>تسجيل الدخول</h2>
+            <div style="font-size: 56px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);">🤖</div>
+            <h2 style="font-size: 28px; background: linear-gradient(to right, #ffffff, #00e5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">تسجيل الدخول</h2>
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
             <div style="position: relative;">
                 <input type="password" id="loginPassword" placeholder="كلمة المرور" style="width: 100%; padding-left: 40px;" />
@@ -447,8 +448,8 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </span>
             </div>
-            <button id="loginBtn" class="btn-primary" style="margin-top: 10px;">دخول</button>
-            <p id="loginError" style="color: #ff4d4d; margin-top: 10px; display: none;"></p>
+            <button id="loginBtn" class="btn-primary" style="margin-top: 24px; font-size: 18px; padding: 14px; width: 100%; border-radius: 12px;">دخول</button>
+            <p id="loginError" style="color: #ff4d4d; margin-top: 15px; display: none; font-weight: 500;"></p>
         </div>
     </div>
 
@@ -507,10 +508,11 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
 
         <!-- القائمة الجانبية -->
         <div id="sideMenu" class="side-menu">
-            <div class="menu-item" id="menuAdminBtn" style="display:none;">👥 إدارة الحسابات</div>
-            <div class="menu-item" id="menuThemeBtn">🌗 تغيير المظهر</div>
-            <div class="menu-item" id="menuDeviceNameBtn">📱 تعيين اسم المرسل</div>
-            <div class="menu-item" id="menuLogoutBtn" style="color: #ff4d4d;">🚪 تسجيل خروج</div>
+            <div class="menu-item" id="menuAdminBtn" style="display:none;">لوحة تحكم المسؤول</div>
+            <div class="menu-item" id="menuRobotsBtn">الروبوتات المتصلة</div>
+            <div class="menu-item" id="menuThemeBtn">تبديل المظهر</div>
+            <div class="menu-item" id="menuDeviceNameBtn">تغيير اسم المرسل</div>
+            <div class="menu-item" id="menuLogoutBtn" style="color: #ff4d4d;">تسجيل خروج</div>
         </div>
 
         <!-- منطقة المعاينة وتعديل الأبعاد -->
@@ -728,7 +730,44 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancelUrlBtn').onclick = () => document.getElementById('urlModal').style.display = 'none';
     document.getElementById('addUrlBtn').onclick = handleAddUrl;
     
-    document.getElementById('sendBtn').onclick = sendToScreens;
+    document.getElementById('sendBtn').onclick = () => {
+        if (screens.length === 0) return alert("لا يوجد روبوتات متاحة");
+        if (selectedMedia.length === 0) return alert("قم بإضافة محتوى أولاً");
+        const container = document.getElementById('sendScreensContainer');
+        container.innerHTML = '';
+        screens.forEach(s => {
+            container.innerHTML += `<label style="display:block; margin: 10px 0;"><input type="checkbox" class="send-screen-cb" value="${s.id}" checked> ${s.name}</label>`;
+        });
+        document.getElementById('sendScreensModal').style.display = 'flex';
+    };
+
+    document.getElementById('confirmSendBtn').onclick = () => {
+        const checked = document.querySelectorAll('.send-screen-cb:checked');
+        if (checked.length === 0) return alert("الرجاء اختيار شاشة واحدة على الأقل");
+        selectedScreens = Array.from(checked).map(cb => screens.find(s => s.id === cb.value));
+        document.getElementById('sendScreensModal').style.display = 'none';
+        sendToScreens();
+    };
+
+    document.getElementById('menuRobotsBtn').onclick = () => {
+        document.getElementById('sideMenu').classList.remove('open');
+        const container = document.getElementById('robotsListContainer');
+        container.innerHTML = '';
+        if (screens.length === 0) {
+            container.innerHTML = 'لا يوجد روبوتات متاحة';
+        } else {
+            screens.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-secondary';
+                btn.style.width = '100%';
+                btn.style.marginBottom = '10px';
+                btn.innerText = s.name;
+                btn.onclick = () => fetchRobotContent(s);
+                container.appendChild(btn);
+            });
+        }
+        document.getElementById('robotsListModal').style.display = 'flex';
+    };
     
     durationSlider.oninput = (e) => {
         durationLabel.innerText = e.target.value + 's';
@@ -1287,7 +1326,6 @@ function setupLayoutEditor() {
         mediaBox.style.height = newHeight + 'px';
         saveLayout();
     }
-    
     // Drag handler
     mediaBox.addEventListener('mousedown', startDrag);
     mediaBox.addEventListener('touchstart', startDrag, {passive: false});
@@ -1346,7 +1384,39 @@ function setupLayoutEditor() {
     }
 }
 
-// ================== الإرسال إلى الشاشات ==================
+async function fetchRobotContent(screen) {
+    document.getElementById('robotsListModal').style.display = 'none';
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingText').innerText = `جاري جلب محتوى ${screen.name}...`;
+    try {
+        const snap = await db.collection("screen_content").where("screenId", "==", screen.id).get();
+        selectedMedia = [];
+        snap.forEach(doc => {
+            const data = doc.data();
+            selectedMedia.push({
+                file: null,
+                name: data.originalFileName || 'ملف من الشاشة',
+                mimeType: data.mediaType === 'video' ? 'video/mp4' : (data.mediaType === 'url' ? 'url' : 'image/jpeg'),
+                mediaType: data.mediaType,
+                durationSeconds: data.durationSeconds || 15,
+                url: data.url,
+                layoutX: data.layoutX || 0, layoutY: data.layoutY || 0,
+                layoutW: data.layoutW || 1, layoutH: data.layoutH || 1,
+                fromServer: true,
+                docId: doc.id
+            });
+        });
+        selectedMediaIndex = selectedMedia.length > 0 ? 0 : -1;
+        renderMediaList();
+        document.getElementById('senderNameLabel').innerText = `محتوى: ${screen.name}`;
+    } catch (err) {
+        console.error(err);
+        alert("حدث خطأ أثناء جلب المحتوى");
+    }
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// ================== الرفع إلى فايربيس ==================
 async function sendToScreens() {
     if (selectedScreens.length === 0) return alert("الرجاء اختيار روبوت أولاً");
     if (selectedMedia.length === 0) return alert("قم بإضافة وسائط للإرسال");
