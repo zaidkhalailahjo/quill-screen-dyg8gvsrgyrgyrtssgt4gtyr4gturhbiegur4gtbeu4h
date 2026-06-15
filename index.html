@@ -735,7 +735,7 @@ function setupAuthAndMenu() {
         btn.disabled = true;
         
         try {
-            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            await auth.setPersistence('local');
             await auth.signInWithEmailAndPassword(email, pass);
         } catch (e) {
             err.style.display = 'block';
