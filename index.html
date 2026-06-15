@@ -603,6 +603,7 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <script>
@@ -621,6 +622,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 const auth = firebase.auth();
+const messaging = firebase.messaging();
 
 const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = secondaryApp.auth();
@@ -936,7 +938,31 @@ function setupAuthAndMenu() {
         listenForNotifications();
         
         if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-            Notification.requestPermission();
+            Notification.requestPermission().then(permission => {
+                if(permission === 'granted') {
+                    requestFCMToken(user);
+                }
+            });
+        } else if ('Notification' in window && Notification.permission === 'granted') {
+            requestFCMToken(user);
+        }
+    }
+
+    async function requestFCMToken(user) {
+        try {
+            // ملاحظة: استبدل YOUR_VAPID_KEY_HERE بالمفتاح الحقيقي من إعدادات فايربيس (Project Settings -> Cloud Messaging -> Web Push certificates)
+            const currentToken = await messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY_HERE' });
+            if (currentToken) {
+                localStorage.setItem('fcmToken', currentToken);
+                // اختياري: يمكننا حفظ التوكن في حساب المستخدم لتسهيل إرسال إشعارات عامة لاحقاً
+                db.collection('users').doc(user.uid).set({
+                    fcmTokens: firebase.firestore.FieldValue.arrayUnion(currentToken)
+                }, { merge: true });
+            } else {
+                console.log('No registration token available.');
+            }
+        } catch (err) {
+            console.log('An error occurred while retrieving token. ', err);
         }
     }
 
@@ -1368,7 +1394,8 @@ async function sendToScreens() {
                         createdAtDeviceTime: Date.now(),
                         layoutX: item.layoutX, layoutY: item.layoutY,
                         layoutW: item.layoutW, layoutH: item.layoutH,
-                        url: item.url
+                        url: item.url,
+                        fcmToken: localStorage.getItem('fcmToken') || null
                     });
                     activeSentFiles.push(cid);
                 } else {
@@ -1394,7 +1421,8 @@ async function sendToScreens() {
                         replacePlaylist: true,
                         createdAtDeviceTime: Date.now(),
                         layoutX: item.layoutX, layoutY: item.layoutY,
-                        layoutW: item.layoutW, layoutH: item.layoutH
+                        layoutW: item.layoutW, layoutH: item.layoutH,
+                        fcmToken: localStorage.getItem('fcmToken') || null
                     });
                     activeSentFiles.push(cid);
                 }
