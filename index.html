@@ -598,6 +598,28 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
                 </div>
             </div>
         </div>
+        <!-- نافذة اختيار الشاشات للإرسال -->
+        <div id="sendScreensModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>اختر الروبوتات</h3>
+                <div id="sendScreensContainer" style="max-height: 200px; overflow-y: auto; text-align: right; margin-bottom: 20px; color: var(--text-primary);"></div>
+                <div class="modal-actions">
+                    <button onclick="document.getElementById('sendScreensModal').style.display='none'" class="btn-secondary">إلغاء</button>
+                    <button id="confirmSendBtn" class="btn-primary">إرسال</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة الروبوتات لجلب المحتوى -->
+        <div id="robotsListModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>اختر روبوت لعرض محتواه</h3>
+                <div id="robotsListContainer" style="max-height: 200px; overflow-y: auto; text-align: right; margin-bottom: 20px; display: flex; flex-direction: column;"></div>
+                <div class="modal-actions">
+                    <button onclick="document.getElementById('robotsListModal').style.display='none'" class="btn-secondary" style="width: 100%;">إغلاق</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- مكتبات Firebase -->
