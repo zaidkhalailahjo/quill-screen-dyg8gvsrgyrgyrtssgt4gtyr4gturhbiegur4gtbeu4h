@@ -810,6 +810,10 @@ function setupAuthAndMenu() {
         }
         container.appendChild(toast);
         setTimeout(() => { if(toast.parentElement) toast.remove(); }, 6000);
+        
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try { new Notification("إشعار Quill", { body: msg }); } catch(e) {}
+        }
     }
 
     function listenForNotifications() {
@@ -930,6 +934,10 @@ function setupAuthAndMenu() {
             });
             
         listenForNotifications();
+        
+        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
     }
 
     // القائمة الجانبية
