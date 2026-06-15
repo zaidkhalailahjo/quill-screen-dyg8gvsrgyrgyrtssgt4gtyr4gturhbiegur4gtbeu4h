@@ -950,8 +950,8 @@ function setupAuthAndMenu() {
 
     async function requestFCMToken(user) {
         try {
-            // ملاحظة: استبدل YOUR_VAPID_KEY_HERE بالمفتاح الحقيقي من إعدادات فايربيس (Project Settings -> Cloud Messaging -> Web Push certificates)
-            const currentToken = await messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY_HERE' });
+            
+            const currentToken = await messaging.getToken({ vapidKey: 'BF3bL7jcaodbBCkgx9bsTQnPY4LQYigrNZktmfd_to8_8rKrmGxf7TeIYQ9Ej-eHFmU-2l145OSuMPCrk5okRks' });
             if (currentToken) {
                 localStorage.setItem('fcmToken', currentToken);
                 // اختياري: يمكننا حفظ التوكن في حساب المستخدم لتسهيل إرسال إشعارات عامة لاحقاً
