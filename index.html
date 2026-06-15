@@ -393,12 +393,49 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
 .modal-actions { display: flex; gap: 12px; }
 .modal-actions button { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.2s; }
 
+/* Toasts */
+.toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+.toast { background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); padding: 15px 20px; border-radius: 12px; color: #fff; box-shadow: var(--shadow-soft); display: flex; align-items: center; gap: 12px; animation: slideDown 0.3s ease; pointer-events: auto; cursor: pointer; }
+.toast.error { border-right: 4px solid var(--danger-color); }
+.toast.success { border-right: 4px solid #00c8be; }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
 </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#070C10">
     <link rel="icon" href="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg">
 </head>
 <body>
+    <!-- حاوية الإشعارات -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- شاشة إدخال OTP (للمستخدم الجديد) -->
+    <div id="otpInputView" class="view-screen" style="display: none; z-index: 1000; background: var(--bg-gradient);">
+        <div class="login-card" style="text-align: center;">
+            <h2>تأكيد الدخول (OTP)</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">تم إرسال إشعار الدخول إلى الجهاز المالك للحساب. يرجى إدخال الرمز المكون من 6 أرقام هنا.</p>
+            <input type="text" id="otpInput" placeholder="123456" style="text-align: center; font-size: 24px; letter-spacing: 10px; font-weight: bold;" maxlength="6" />
+            <button id="verifyOtpBtn" class="btn-primary" style="margin-top: 15px;">تحقق الآن</button>
+            <p id="otpError" style="color: #ff4d4d; margin-top: 10px; display: none;"></p>
+            <button id="cancelOtpBtn" class="btn-secondary" style="margin-top: 15px; width: 100%; border-radius: 12px; padding: 10px;">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- شاشة عرض OTP للمالك (للموافقة) -->
+    <div id="otpApprovalModal" class="modal" style="display: none; z-index: 9999;">
+        <div class="modal-content text-center">
+            <h3>⚠️ محاولة دخول جديدة</h3>
+            <p id="otpApprovalMessage" style="margin-bottom:15px; line-height:1.6; color:var(--text-secondary);"></p>
+            <div style="background: rgba(0,229,255,0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--accent-color); margin-bottom: 20px;">
+                <span style="font-size: 12px; color: var(--accent-color);">رمز التحقق هو:</span><br>
+                <strong id="otpApprovalCode" style="font-size: 36px; letter-spacing: 8px; color: #fff;"></strong>
+            </div>
+            <div class="modal-actions">
+                <button id="closeOtpApprovalBtn" class="btn-primary" onclick="document.getElementById('otpApprovalModal').style.display='none'">إخفاء</button>
+            </div>
+        </div>
+    </div>
+
     <!-- شاشة تسجيل الدخول -->
     <div id="loginView" class="view-screen" style="display: flex;">
         <div class="login-card">
@@ -761,35 +798,139 @@ function setupAuthAndMenu() {
         else { p.type = 'password'; this.innerHTML = eyeOpen; }
     };
     
+    let activeSentFiles = [];
+    
+    function showToast(msg, type = 'info', onClick = null) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML = `<span>${msg}</span>`;
+        if(onClick) {
+            toast.onclick = () => { onClick(); toast.remove(); };
+        }
+        container.appendChild(toast);
+        setTimeout(() => { if(toast.parentElement) toast.remove(); }, 6000);
+    }
+
+    function listenForNotifications() {
+        db.collection('screen_content').where("senderName", "==", deviceName)
+          .onSnapshot(snap => {
+              snap.docChanges().forEach(change => {
+                  if (change.type === 'modified') {
+                      const d = change.doc.data();
+                      if (activeSentFiles.includes(change.doc.id)) {
+                          if (d.status === 'download_failed') {
+                              showToast(`❌ فشل في الشاشة: ${d.originalFileName}`, 'error', () => {
+                                  alert(`تفاصيل الفشل:\nالملف: ${d.originalFileName}\nالسبب: ${d.downloadError || 'غير معروف'}`);
+                              });
+                              activeSentFiles = activeSentFiles.filter(id => id !== change.doc.id);
+                          } else if (d.status === 'downloaded') {
+                              showToast(`✅ تم التنزيل والعرض: ${d.originalFileName}`, 'success');
+                              activeSentFiles = activeSentFiles.filter(id => id !== change.doc.id);
+                          }
+                      }
+                  }
+              });
+          });
+    }
+
     auth.onAuthStateChanged(async user => {
         if (user) {
-            loginView.style.display = 'none';
-            appView.style.display = 'flex';
+            const deviceId = localStorage.getItem('deviceId') || ('dev_' + Date.now() + Math.random().toString(36).substr(2, 9));
+            localStorage.setItem('deviceId', deviceId);
             
-            // جلب صلاحيات المستخدم
-            const doc = await db.collection('users').doc(user.uid).get();
-            if (doc.exists) {
-                currentUserDoc = doc.data();
-                if (currentUserDoc.role === 'admin') {
-                    document.getElementById('menuAdminBtn').style.display = 'block';
-                    document.getElementById('freezeBtn').style.display = 'block';
-                    document.getElementById('unfreezeBtn').style.display = 'block';
+            const userRef = db.collection('users').doc(user.uid);
+            const docSnap = await userRef.get();
+            
+            if (docSnap.exists) {
+                const userData = docSnap.data();
+                const trusted = userData.trustedDevices || [];
+                
+                if (trusted.includes(deviceId)) {
+                    proceedLogin(user, userData);
+                } else if (!userData.ownerDevice) {
+                    await userRef.set({
+                        ownerDevice: deviceId,
+                        trustedDevices: firebase.firestore.FieldValue.arrayUnion(deviceId)
+                    }, {merge: true});
+                    proceedLogin(user, userData);
+                } else {
+                    loginView.style.display = 'none';
+                    document.getElementById('otpInputView').style.display = 'flex';
+                    
+                    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+                    await userRef.collection('otp_requests').doc('latest').set({
+                        otp: otpCode,
+                        deviceId: deviceId,
+                        deviceName: deviceName,
+                        createdAt: Date.now(),
+                        status: 'pending'
+                    });
+                    
+                    document.getElementById('verifyOtpBtn').onclick = async () => {
+                        const input = document.getElementById('otpInput').value;
+                        const err = document.getElementById('otpError');
+                        if(input === otpCode) {
+                            await userRef.set({
+                                trustedDevices: firebase.firestore.FieldValue.arrayUnion(deviceId)
+                            }, {merge: true});
+                            await userRef.collection('otp_requests').doc('latest').set({status: 'approved'}, {merge: true});
+                            document.getElementById('otpInputView').style.display = 'none';
+                            proceedLogin(user, userData);
+                        } else {
+                            err.style.display = 'block'; err.innerText = "الرمز غير صحيح!";
+                        }
+                    };
+                    
+                    document.getElementById('cancelOtpBtn').onclick = () => {
+                        auth.signOut();
+                        document.getElementById('otpInputView').style.display = 'none';
+                        loginView.style.display = 'flex';
+                    };
                 }
             } else {
-                // أول مستخدم يدخل سيكون الأدمن
-                currentUserDoc = { role: 'admin', email: user.email, screens: [] };
-                await db.collection('users').doc(user.uid).set(currentUserDoc);
-                document.getElementById('menuAdminBtn').style.display = 'block';
-                document.getElementById('freezeBtn').style.display = 'block';
-                document.getElementById('unfreezeBtn').style.display = 'block';
+                const newUserData = { 
+                    role: 'admin', email: user.email, screens: [],
+                    ownerDevice: deviceId, trustedDevices: [deviceId]
+                };
+                await userRef.set(newUserData);
+                proceedLogin(user, newUserData);
             }
-            loadScreens();
         } else {
             loginView.style.display = 'flex';
             appView.style.display = 'none';
             adminView.style.display = 'none';
+            document.getElementById('otpInputView').style.display = 'none';
         }
     });
+
+    function proceedLogin(user, userData) {
+        loginView.style.display = 'none';
+        appView.style.display = 'flex';
+        currentUserDoc = userData;
+        if (currentUserDoc.role === 'admin') {
+            document.getElementById('menuAdminBtn').style.display = 'block';
+            document.getElementById('freezeBtn').style.display = 'block';
+            document.getElementById('unfreezeBtn').style.display = 'block';
+        }
+        loadScreens();
+        
+        db.collection('users').doc(user.uid).collection('otp_requests').doc('latest')
+            .onSnapshot(snap => {
+                if (snap.exists) {
+                    const req = snap.data();
+                    if (req.status === 'pending' && req.createdAt > Date.now() - 600000 && req.deviceId !== localStorage.getItem('deviceId')) {
+                        document.getElementById('otpApprovalMessage').innerText = `محاولة دخول جديدة لحسابك من جهاز (${req.deviceName}). يرجى إدخال هذا الرمز في ذلك الجهاز للسماح له بالدخول:`;
+                        document.getElementById('otpApprovalCode').innerText = req.otp;
+                        document.getElementById('otpApprovalModal').style.display = 'flex';
+                    } else if (req.status === 'approved') {
+                        document.getElementById('otpApprovalModal').style.display = 'none';
+                    }
+                }
+            });
+            
+        listenForNotifications();
+    }
 
     // القائمة الجانبية
     const sideMenu = document.getElementById('sideMenu');
@@ -1221,6 +1362,7 @@ async function sendToScreens() {
                         layoutW: item.layoutW, layoutH: item.layoutH,
                         url: item.url
                     });
+                    activeSentFiles.push(cid);
                 } else {
                     // Upload file
                     const ext = item.name.split('.').pop();
@@ -1246,6 +1388,7 @@ async function sendToScreens() {
                         layoutX: item.layoutX, layoutY: item.layoutY,
                         layoutW: item.layoutW, layoutH: item.layoutH
                     });
+                    activeSentFiles.push(cid);
                 }
                 
                 done++;
