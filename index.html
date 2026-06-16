@@ -60,24 +60,22 @@
 
     <div id="app" class="view-screen" style="display: none;">
         <!-- شريط الروبوتات -->
-        <header class="header">
-            <div class="robots-info">
-                <span class="icon" id="openMenuBtn" style="cursor: pointer;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                </span>
-                <div class="text">
-                    <div class="label" id="senderNameLabel">الروبوتات المحددة</div>
-                    <div id="selectedRobotsText" class="value">جاري البحث...</div>
-                </div>
-            </div>
-            <button id="refreshScreensBtn" class="icon-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-10.09l5.67-5.67"/></svg>
-            </button>
+        <header class="header" style="justify-content: flex-start; gap: 20px;">
+            <span class="icon" id="openMenuBtn" style="cursor: pointer; padding:10px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </span>
+            <div style="font-size: 18px; font-weight: bold; color: var(--accent-color);">نظام إدارة الشاشات</div>
         </header>
 
         <!-- القائمة الجانبية -->
         <div id="sideMenu" class="side-menu">
-            <div class="menu-item" id="menuAdminBtn" style="display:none;">👥 إدارة الحسابات</div>
+            <div class="menu-item" id="menuAdminBtn" style="display:none;">إدارة الحسابات</div>
+            <div class="menu-item" id="menuScreensBtn">الشاشات الموجودة</div>
+            <div class="menu-item" id="menuRemoteBtn">التحكم في الشاشة</div>
+            <div class="menu-item" id="menuThemeBtn">الوضع الليلي</div>
+            <div class="menu-item" id="menuDeviceNameBtn">تغيير اسم الجهاز</div>
+            <div class="menu-item" id="menuLogoutBtn" style="color: #ff4d4d;">تسجيل خروج</div>
+        </div>
             <div class="menu-item" id="menuThemeBtn">🌗 تغيير المظهر</div>
             <div class="menu-item" id="menuDeviceNameBtn">📱 تعيين اسم المرسل</div>
             <div class="menu-item" id="menuLogoutBtn" style="color: #ff4d4d;">🚪 تسجيل خروج</div>
@@ -114,9 +112,7 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
             <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;" multiple>
-            <button id="addUrlDialogBtn" class="add-btn" title="إضافة رابط">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-            </button>
+            
             
             
             
@@ -128,23 +124,7 @@
         </div>
 
         
-        <div id="remoteControlSection" class="remote-control-section" style="margin-top:20px;">
-            <h3>التحكم بالشاشة (ريموت)</h3>
-            <div class="vol-control">
-                <label>مستوى الصوت: <span id="volText">50%</span></label>
-                <input type="range" id="volSlider" min="0" max="100" value="50">
-            </div>
-            <div class="dpad-grid">
-                <button class="dpad-btn" onclick="sendCommand('open_settings')">⚙</button>
-                <button class="dpad-btn" onclick="sendCommand('up')">▲</button>
-                <div></div>
-                <button class="dpad-btn" onclick="sendCommand('left')">◀</button>
-                <button class="dpad-btn" onclick="sendCommand('enter')">OK</button>
-                <button class="dpad-btn" onclick="sendCommand('right')">▶</button>
-                <div></div>
-                <button class="dpad-btn" onclick="sendCommand('down')">▼</button>
-                <div></div>
-            </div>
+        
         </div>
 
         <!-- قائمة الوسائط المحددة -->
@@ -158,16 +138,45 @@
             <div id="loadingText">جاري المعالجة...</div>
         </div>
         
-        <!-- نافذة إضافة رابط -->
-        <div id="urlModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <h3>إضافة رابط ويب</h3>
-                <input type="url" id="urlInput" placeholder="https://..." dir="ltr">
+        
+        <!-- نافذة الشاشات الموجودة -->
+        <div id="screensModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 500px; width: 90%;">
+                <h3>الشاشات الموجودة</h3>
+                <div id="screensList" style="max-height: 60vh; overflow-y: auto; text-align: right; margin: 15px 0;">
+                    <!-- سيتم ملؤها عبر JS -->
+                </div>
                 <div class="modal-actions">
-                    <button id="cancelUrlBtn" class="btn-secondary">إلغاء</button>
-                    <button id="addUrlBtn" class="btn-primary">إضافة</button>
+                    <button id="saveScreensBtn" class="btn-primary" style="width: 100%;">حفظ وإغلاق</button>
                 </div>
             </div>
+        </div>
+
+        <!-- نافذة التحكم في الشاشة -->
+        <div id="remoteModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 400px; width: 90%; text-align: center;">
+                <h3>التحكم في الشاشة (ريموت)</h3>
+                <div class="vol-control" style="margin: 20px 0;">
+                    <label>مستوى الصوت: <span id="volText">50%</span></label>
+                    <input type="range" id="volSlider" min="0" max="100" value="50" style="width:100%;">
+                </div>
+                <div class="dpad-grid" style="margin: 0 auto;">
+                    <button class="dpad-btn" onclick="sendCommand('open_settings')">⚙️</button>
+                    <button class="dpad-btn" onclick="sendCommand('up')">▲</button>
+                    <div></div>
+                    <button class="dpad-btn" onclick="sendCommand('left')">◀</button>
+                    <button class="dpad-btn" onclick="sendCommand('enter')">OK</button>
+                    <button class="dpad-btn" onclick="sendCommand('right')">▶</button>
+                    <div></div>
+                    <button class="dpad-btn" onclick="sendCommand('down')">▼</button>
+                    <div></div>
+                </div>
+                <div class="modal-actions" style="margin-top:20px;">
+                    <button id="closeRemoteBtn" class="btn-secondary" style="width: 100%;">إغلاق</button>
+                </div>
+            </div>
+        </div>
+
         </div>
 
         <!-- نافذة تثبيت التطبيق -->
