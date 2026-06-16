@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تطبيق الإرسال Quill</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070C10">
+    <link rel="icon" href="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg">
+</head>
+<body>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginView" class="view-screen" style="display: flex;">
+        <div class="login-card">
+            <h2>تسجيل الدخول</h2>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
+            <div style="position: relative;">
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" style="width: 100%;" />
+                <span id="toggleLoginPass" style="position: absolute; left: 10px; top: 12px; cursor: pointer; font-size: 14px; color: var(--text-secondary);">إظهار</span>
+            </div>
+            <button id="loginBtn" class="btn-primary" style="margin-top: 10px;">دخول</button>
+            <p id="loginError" style="color: #ff4d4d; margin-top: 10px; display: none;"></p>
+        </div>
+    </div>
 
+    <!-- شاشة إدارة الحسابات (للمدير) -->
+    <div id="adminView" class="view-screen" style="display: none;">
+        <div class="admin-header">
+            <h2>إدارة الحسابات والروبوتات</h2>
+            <button id="backToAppBtn" class="icon-btn" title="عودة">🔙</button>
+        </div>
+        <div class="admin-content">
+            <div class="card">
+                <h3>إضافة حساب جديد</h3>
+                <input type="email" id="newAccEmail" placeholder="البريد الإلكتروني للمستخدم" />
+                <div style="position: relative;">
+                    <input type="password" id="newAccPass" placeholder="كلمة المرور" style="width: 100%;" />
+                    <span id="toggleNewPass" style="position: absolute; left: 10px; top: 12px; cursor: pointer; font-size: 14px; color: var(--text-secondary);">إظهار</span>
+                </div>
+                <select id="newAccRole" style="width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--divider);">
+                    <option value="client">Client - عميل مخصص (محدد الشاشات)</option>
+                    <option value="user">Manager - مدير محتوى (كل الشاشات)</option>
+                    <option value="admin">Admin - مدير عام (صلاحيات كاملة + تجميد)</option>
+                </select>
+                <div style="margin-top: 10px;">
+                    <label>الروبوتات المسموحة:</label>
+                    <div id="adminRobotsList" class="robots-checklist"></div>
+                </div>
+                <button id="createAccBtn" class="btn-primary" style="margin-top: 15px;">إنشاء الحساب</button>
+                <p id="createAccMsg" style="margin-top: 10px;"></p>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3>الحسابات الحالية</h3>
+                <div id="usersList">جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app" class="view-screen" style="display: none;">
+        <!-- شريط الروبوتات -->
+        <header class="header">
+            <div class="robots-info">
+                <span class="icon" id="openMenuBtn" style="cursor: pointer;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </span>
+                <div class="text">
+                    <div class="label" id="senderNameLabel">الروبوتات المحددة</div>
+                    <div id="selectedRobotsText" class="value">جاري البحث...</div>
+                </div>
+            </div>
+            <button id="refreshScreensBtn" class="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-10.09l5.67-5.67"/></svg>
+            </button>
+        </header>
+
+        <!-- القائمة الجانبية -->
+        <div id="sideMenu" class="side-menu">
+            <div class="menu-item" id="menuAdminBtn" style="display:none;">👥 إدارة الحسابات</div>
+            <div class="menu-item" id="menuThemeBtn">🌗 تغيير المظهر</div>
+            <div class="menu-item" id="menuDeviceNameBtn">📱 تعيين اسم المرسل</div>
+            <div class="menu-item" id="menuLogoutBtn" style="color: #ff4d4d;">🚪 تسجيل خروج</div>
+        </div>
+
+        <!-- منطقة المعاينة وتعديل الأبعاد -->
+        <div class="preview-area" id="previewArea">
+            <div id="mediaBox" class="media-box" style="display: none;">
+                <img id="imagePreview" style="display: none;" draggable="false" />
+                <video id="videoPreview" loop muted style="display: none;"></video>
+                <div id="urlPreview" style="display: none;" class="url-placeholder">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    رابط ويب
+                </div>
+                <div class="resize-handle" id="resizeHandle"></div>
+            </div>
+            <div id="emptyPreview" class="empty-preview">
+                لا توجد وسائط محددة
+            </div>
+        </div>
+
+        <!-- مدة العرض -->
+        <div class="duration-control">
+            <div class="duration-header">
+                <span>مدة العرض:</span>
+                <span id="durationLabel" class="duration-value">15s</span>
+            </div>
+            <input type="range" id="durationSlider" min="1" max="60" value="15">
+        </div>
+
+        <!-- أزرار التحكم بالقائمة والتجميد -->
+        <div class="controls-bar" style="flex-wrap: wrap;">
+            <button id="addMediaBtn" class="add-btn" title="إضافة وسائط">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;" multiple>
+            <button id="addUrlDialogBtn" class="add-btn" title="إضافة رابط">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </button>
+            
+            
+            
+
+            <button id="sendBtn" class="send-btn" style="flex: 1; min-width: 150px;">
+                إرسال للشاشة
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; vertical-align:middle;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+
+        
+        <div id="remoteControlSection" class="remote-control-section" style="margin-top:20px;">
+            <h3>التحكم بالشاشة (ريموت)</h3>
+            <div class="vol-control">
+                <label>مستوى الصوت: <span id="volText">50%</span></label>
+                <input type="range" id="volSlider" min="0" max="100" value="50">
+            </div>
+            <div class="dpad-grid">
+                <button class="dpad-btn" onclick="sendCommand('open_settings')">⚙</button>
+                <button class="dpad-btn" onclick="sendCommand('up')">▲</button>
+                <div></div>
+                <button class="dpad-btn" onclick="sendCommand('left')">◀</button>
+                <button class="dpad-btn" onclick="sendCommand('enter')">OK</button>
+                <button class="dpad-btn" onclick="sendCommand('right')">▶</button>
+                <div></div>
+                <button class="dpad-btn" onclick="sendCommand('down')">▼</button>
+                <div></div>
+            </div>
+        </div>
+
+        <!-- قائمة الوسائط المحددة -->
+        <div class="media-list" id="mediaList">
+            <!-- سيتم إضافة العناصر هنا عبر الجافاسكريبت -->
+        </div>
+
+        <!-- طبقة التحميل -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loader"></div>
+            <div id="loadingText">جاري المعالجة...</div>
+        </div>
+        
+        <!-- نافذة إضافة رابط -->
+        <div id="urlModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>إضافة رابط ويب</h3>
+                <input type="url" id="urlInput" placeholder="https://..." dir="ltr">
+                <div class="modal-actions">
+                    <button id="cancelUrlBtn" class="btn-secondary">إلغاء</button>
+                    <button id="addUrlBtn" class="btn-primary">إضافة</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة تثبيت التطبيق -->
+        <div id="installModal" class="modal" style="display: none;">
+            <div class="modal-content text-center">
+                <img src="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg" alt="Icon" class="install-icon">
+                <h3 id="installTitle">تثبيت التطبيق</h3>
+                <p id="installMessage" style="margin-bottom:20px; line-height:1.6; color:#8899A6;">قم بتثبيت التطبيق على جهازك للوصول السريع وتجربة أفضل.</p>
+                <div class="modal-actions">
+                    <button id="closeInstallBtn" class="btn-secondary">لاحقاً</button>
+                    <button id="installAppBtn" class="btn-primary">تثبيت الآن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
