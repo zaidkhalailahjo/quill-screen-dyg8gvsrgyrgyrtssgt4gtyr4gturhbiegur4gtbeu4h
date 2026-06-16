@@ -944,7 +944,7 @@ function loadScreens() {
                 lastBatchId = cDoc.batchId;
                 const mt = cDoc.mediaType;
                 const fname = cDoc.originalFileName || "غير معروف";
-                lastContentText = يعرض الآن:  ;
+                lastContentText = "يعرض الآن: " + (mt === "video" ? "🎬" : "🖼️") + " " + fname;
             }
             screens.push({ id: sid, name: name, lastBatchId: lastBatchId, lastContentText: lastContentText });
         }
