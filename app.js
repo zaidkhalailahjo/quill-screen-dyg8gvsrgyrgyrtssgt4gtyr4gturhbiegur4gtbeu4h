@@ -83,7 +83,7 @@ closeInstallBtn.addEventListener('click', () => {
 
 // ================== تهيئة التطبيق ==================
 document.addEventListener('DOMContentLoaded', () => {
-    applyTheme();
+    applyTheme(); updateThemeBtnText();
     
     // إذا كان النظام iOS ولم يتم التثبيت
     if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installPromptClosed')) {
@@ -116,9 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addMediaBtn').onclick = () => document.getElementById('fileInput').click();
     document.getElementById('fileInput').onchange = handleFileSelect;
     
-    document.getElementById('addUrlDialogBtn').onclick = () => document.getElementById('urlModal').style.display = 'flex';
-    document.getElementById('cancelUrlBtn').onclick = () => document.getElementById('urlModal').style.display = 'none';
-    document.getElementById('addUrlBtn').onclick = handleAddUrl;
+    
     
     document.getElementById('sendBtn').onclick = sendToScreens;
     
@@ -131,6 +129,42 @@ document.addEventListener('DOMContentLoaded', () => {
     
     setupLayoutEditor();
     setupAuthAndMenu();
+
+    // Setup Modals
+    const screensModal = document.getElementById('screensModal');
+    const remoteModal = document.getElementById('remoteModal');
+    
+    document.getElementById('menuScreensBtn').onclick = () => {
+        document.getElementById('sideMenu').classList.remove('open');
+        screensModal.style.display = 'flex';
+        renderScreensList();
+    };
+    document.getElementById('saveScreensBtn').onclick = () => {
+        screensModal.style.display = 'none';
+        // Extract selected
+        selectedScreens = [];
+        const checkboxes = document.querySelectorAll('.screen-checkbox');
+        checkboxes.forEach(cb => {
+            if(cb.checked) {
+                const sid = cb.getAttribute('data-id');
+                const sname = cb.getAttribute('data-name');
+                const slast = cb.getAttribute('data-last');
+                selectedScreens.push({ id: sid, name: sname, lastBatchId: slast });
+            }
+        });
+    };
+    
+    document.getElementById('menuRemoteBtn').onclick = () => {
+        document.getElementById('sideMenu').classList.remove('open');
+        remoteModal.style.display = 'flex';
+    };
+    document.getElementById('closeRemoteBtn').onclick = () => {
+        remoteModal.style.display = 'none';
+    };
+    
+    // Add dynamic theme text update to toggle
+    updateThemeBtnText();
+
 });
 
 function applyTheme() {
@@ -209,10 +243,14 @@ function setupAuthAndMenu() {
             sideMenu.classList.remove('open'); 
         }
     };
-    document.getElementById('menuThemeBtn').onclick = () => {
+    function updateThemeBtnText() {
+    const btn = document.getElementById('menuThemeBtn');
+    if(btn) btn.innerText = isDarkMode ? "☀️ الوضع النهاري" : "🌙 الوضع الليلي";
+}
+document.getElementById('menuThemeBtn').onclick = () => {
         isDarkMode = !isDarkMode;
         localStorage.setItem('isDarkMode', isDarkMode);
-        applyTheme();
+        applyTheme(); updateThemeBtnText();
         sideMenu.classList.remove('open');
     };
     document.getElementById('menuDeviceNameBtn').onclick = () => {
@@ -301,50 +339,70 @@ async function loadAdminData() {
 }
 
 // ================== الروبوتات ==================
+
 function loadScreens() {
-    selectedRobotsText.innerText = "جاري البحث...";
-    db.collection("screens").get().then(async (snap) => {
+    if(!currentUserDoc) return;
+    db.collection('screens').onSnapshot(async snap => {
         screens = [];
         for (let doc of snap.docs) {
             const sid = doc.id;
             const name = doc.data().screenName || sid;
-            // التحقق من الصلاحيات
             if (currentUserDoc && currentUserDoc.role !== 'admin' && currentUserDoc.role !== 'user') {
                 if (!currentUserDoc.screens || !currentUserDoc.screens.includes(sid)) continue;
             }
             
-            // جلب محتوى الشاشة الأخير (لمعرفة الاختلاف)
             let lastBatchId = null;
-            let lastContentText = "";
-            const cSnap = await db.collection("screen_content").where("screenId", "==", sid).orderBy("createdAt", "desc").limit(1).get().catch(e => {
-                // Fallback in case index is missing for orderBy
+            let lastContentText = "فارغ";
+            const cSnap = await db.collection("screen_content").where("screenId", "==", sid).orderBy("createdAtDeviceTime", "desc").limit(1).get().catch(e => {
                 return db.collection("screen_content").where("screenId", "==", sid).limit(1).get();
             });
             if (!cSnap.empty) {
                 const cDoc = cSnap.docs[0].data();
                 lastBatchId = cDoc.batchId;
                 const mt = cDoc.mediaType;
-                const fname = cDoc.originalFileName || "محتوى";
-                const sender = cDoc.senderName || "مجهول";
-                const icon = mt === "video" ? "🎬" : (mt === "image" ? "🖼️" : (mt === "url" ? "🌐" : "📄"));
-                lastContentText = `\n${icon} ${fname} (مِن: ${sender})`;
+                const fname = cDoc.originalFileName || "غير معروف";
+                lastContentText = يعرض الآن:  ;
             }
             screens.push({ id: sid, name: name, lastBatchId: lastBatchId, lastContentText: lastContentText });
         }
         
-        if (screens.length === 0) {
-            selectedRobotsText.innerText = "لا توجد شاشات أو غير مصرح لك";
-        } else {
-            selectedScreens = screens; // افتراضياً نختار كل المسموح له (أو يمكن تغييره لقائمة اختيار)
-            selectedRobotsText.innerText = screens.map(s => s.name + s.lastContentText).join('\n\n');
-        }
-    }).catch(err => {
-        selectedRobotsText.innerText = "خطأ في الاتصال";
-        console.error(err);
+        // Ensure previously selected screens remain selected if they still exist
+        const oldSelected = selectedScreens.map(s => s.id);
+        selectedScreens = screens.filter(s => oldSelected.includes(s.id));
+        
+        renderScreensList();
     });
 }
 
-// ================== الوسائط والمقاطع ==================
+function renderScreensList() {
+    const list = document.getElementById('screensList');
+    if(!list) return;
+    list.innerHTML = '';
+    if(screens.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding: 20px;">لا توجد شاشات متاحة</div>';
+        return;
+    }
+    screens.forEach(s => {
+        const isChecked = selectedScreens.some(sel => sel.id === s.id) ? 'checked' : '';
+        const div = document.createElement('div');
+        div.style.padding = '15px';
+        div.style.borderBottom = '1px solid var(--border-color)';
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.gap = '8px';
+        
+        div.innerHTML = 
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; font-size:16px;">
+                    <input type="checkbox" class="screen-checkbox" data-id="" data-name="" data-last=""  style="width:20px; height:20px;">
+                    
+                </label>
+            </div>
+            <div style="color: var(--accent-color); font-size: 14px; padding-right: 30px;"></div>
+        ;
+        list.appendChild(div);
+    });
+}
 function handleFileSelect(e) {
     const files = e.target.files;
     for(let i=0; i<files.length; i++) {
