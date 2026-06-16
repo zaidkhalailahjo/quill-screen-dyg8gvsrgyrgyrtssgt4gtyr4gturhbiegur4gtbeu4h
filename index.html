@@ -562,6 +562,16 @@ body.light-theme .modal-content input { background: rgba(255,255,255,0.6); }
             <button id="landscapeBtn" class="add-btn" title="الوضع العرضي" style="display:none; color: #00c8be; border-color: #00c8be;">
                 🖥️
             </button>
+            <button id="exitBtn" class="add-btn" title="إغلاق التطبيق كلياً" style="display:none; color: #ff4d4d; border-color: #ff4d4d;">
+                🚪
+            </button>
+            <button id="autoStartOnBtn" class="add-btn" title="تفعيل الإقلاع التلقائي" style="display:none; color: #00c8be; border-color: #00c8be;">
+                🟢
+            </button>
+            <button id="autoStartOffBtn" class="add-btn" title="إيقاف الإقلاع التلقائي" style="display:none; color: #ff4d4d; border-color: #ff4d4d;">
+                🔴
+            </button>
+
 
             <button id="sendBtn" class="send-btn" style="flex: 1; min-width: 150px;">
                 إرسال للشاشة
@@ -985,6 +995,10 @@ function setupAuthAndMenu() {
             document.getElementById('unfreezeBtn').style.display = 'block';
             document.getElementById('portraitBtn').style.display = 'block';
             document.getElementById('landscapeBtn').style.display = 'block';
+            document.getElementById('exitBtn').style.display = 'block';
+            document.getElementById('autoStartOnBtn').style.display = 'block';
+            document.getElementById('autoStartOffBtn').style.display = 'block';
+
         }
         loadScreens();
         
@@ -1106,12 +1120,45 @@ function setupAuthAndMenu() {
     };
     
     // أزرار التجميد
-    document.getElementById('freezeBtn').onclick = () => {
-        if (selectedScreens.length === 0) return alert("اختر شاشة");
-        selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({isFrozen: true}, {merge: true}));
-        alert("تم إرسال أمر التجميد");
-    };
+        
     
+    document.getElementById('freezeBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        showConfirm("تجميد الشاشة", "هل أنت متأكد من تجميد الشاشات المحددة؟ لن يستطيع التطبيق تلقي محتوى جديد.", () => {
+            selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({isFrozen: true}, {merge: true}));
+            alert("تم التجميد");
+        }, true);
+    };
+
+    document.getElementById('unfreezeBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({isFrozen: false}, {merge: true}));
+    };
+
+    document.getElementById('exitBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        showConfirm("إغلاق التطبيق", "هل أنت متأكد من إغلاق تطبيق الاستقبال في الشاشات المحددة كلياً؟", () => {
+            selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({command: "exit_app"}, {merge: true}));
+            alert("تم إرسال أمر الإغلاق");
+        }, true);
+    };
+
+    document.getElementById('autoStartOnBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        showConfirm("تفعيل الإقلاع", "هل أنت متأكد من جعل التطبيق يفتح تلقائياً عند تشغيل الشاشة؟", () => {
+            selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({autoStart: true}, {merge: true}));
+            alert("تم التفعيل");
+        });
+    };
+
+    document.getElementById('autoStartOffBtn').onclick = () => {
+        if (selectedScreens.length === 0) return alert("حدد شاشة");
+        showConfirm("إيقاف الإقلاع", "هل أنت متأكد من إيقاف التشغيل التلقائي؟ (لن يفتح التطبيق إلا يدوياً)", () => {
+            selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({autoStart: false}, {merge: true}));
+            alert("تم الإيقاف");
+        }, true);
+    };
+
     document.getElementById('portraitBtn').onclick = () => {
         if (selectedScreens.length === 0) return alert("حدد شاشة");
         selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({orientation: 'portrait'}, {merge: true}));
@@ -1124,12 +1171,7 @@ function setupAuthAndMenu() {
         alert("تم تغيير الوضع إلى عرضي");
     };
 
-    document.getElementById('unfreezeBtn').onclick = () => {
-        if (selectedScreens.length === 0) return alert("اختر شاشة");
-        selectedScreens.forEach(s => db.collection('screens').doc(s.id).set({isFrozen: false}, {merge: true}));
-        alert("تم إرسال أمر فك التجميد");
-    };
-}
+    }
 
 async function loadAdminData() {
     const rList = document.getElementById('adminRobotsList');
@@ -1565,5 +1607,18 @@ async function sendToScreens() {
             });
         }
     </script>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 25px;">
+            <h3 id="confirmTitle" style="color: #00E5FF; margin-bottom: 15px;">تأكيد</h3>
+            <p id="confirmMessage" style="color: #8899A6; margin-bottom: 25px; line-height: 1.5;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button id="confirmYesBtn" class="add-btn" style="flex: 1; background: #ff4d4d; color: white;">نعم</button>
+                <button onclick="document.getElementById('confirmModal').style.display='none'" class="add-btn" style="flex: 1; background: #2A3542; color: white; border: none;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
