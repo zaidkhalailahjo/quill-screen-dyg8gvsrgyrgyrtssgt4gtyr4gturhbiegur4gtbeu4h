@@ -547,9 +547,9 @@ input[type=range] { width: 100%; accent-color: #00A878; }
         <div id="remoteModal" class="modal" style="display: none;">
             <div class="modal-content" style="max-width: 400px; width: 90%; text-align: center;">
                 <h3>التحكم في الشاشة (ريموت)</h3>
-                <div class="vol-control" style="margin: 20px 0;">
-                    <label>مستوى الصوت: <span id="volText">50%</span></label>
-                    <input type="range" id="volSlider" min="0" max="100" value="50" style="width:100%;">
+                <div class="vol-control" style="display:flex; justify-content:center; gap:20px; margin: 20px 0;">
+                    <button class="dpad-btn" onclick="sendCommand('vol_down')" style="width:60px; height:50px;">🔉 -</button>
+                    <button class="dpad-btn" onclick="sendCommand('vol_up')" style="width:60px; height:50px;">🔊 +</button>
                 </div>
                 <div class="dpad-grid" style="margin: 0 auto;">
                     <button class="dpad-btn" onclick="sendCommand('open_settings')">⚙️</button>
@@ -748,7 +748,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sid = cb.getAttribute('data-id');
                 const sname = cb.getAttribute('data-name');
                 const slast = cb.getAttribute('data-last');
-                selectedScreens.push({ id: sid, name: sname, lastBatchId: slast });
+                const sseen = cb.getAttribute('data-seen');
+                selectedScreens.push({ id: sid, name: sname, lastBatchId: slast, lastSeenAt: parseInt(sseen) });
             }
         });
         updateSelectedRobotsText();
@@ -764,13 +765,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 db.collection("screen_content")
                   .where("screenId", "==", screen.id)
                   .where("batchId", "==", screen.lastBatchId)
-                  .orderBy("batchOrder", "asc")
                   .get()
                   .then(async snap => {
                       if(!snap.empty) {
                           selectedMedia = [];
-                          for (let doc of snap.docs) {
-                              const d = doc.data();
+                          const docs = snap.docs.map(d => d.data());
+                          docs.sort((a, b) => (a.batchOrder || 0) - (b.batchOrder || 0));
+                          for (let d of docs) {
                               const mt = d.mediaType;
                               let url = "";
                               if (mt === 'url') url = d.url;
@@ -808,6 +809,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('menuRemoteBtn').onclick = () => {
         document.getElementById('sideMenu').classList.remove('open');
+        if (selectedScreens.length === 0) {
+            alert("الرجاء اختيار شاشة أولاً من قائمة الروبوتات!");
+            return;
+        }
+        const now = Date.now();
+        const offline = selectedScreens.some(s => !s.lastSeenAt || (now - s.lastSeenAt > 3 * 60 * 1000));
+        if (offline) {
+            alert("تنبيه: الشاشة المحددة تبدو غير متصلة حالياً (Offline). قد لا تستجيب للتحكم المباشر!");
+        }
         remoteModal.style.display = 'flex';
     };
     document.getElementById('closeRemoteBtn').onclick = () => {
@@ -1013,7 +1023,7 @@ function loadScreens() {
             } else {
                 lastContentText = statusDot + " فارغ";
             }
-            screens.push({ id: sid, name: name, lastBatchId: lastBatchId, lastContentText: lastContentText });
+            screens.push({ id: sid, name: name, lastBatchId: lastBatchId, lastContentText: lastContentText, lastSeenAt: lastSeenAt });
         }
         
         // Ensure previously selected screens remain selected if they still exist
@@ -1044,7 +1054,7 @@ function renderScreensList() {
         div.innerHTML = 
             '<div style="display: flex; align-items: center; justify-content: space-between;">' +
                 '<label style="cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; font-size:16px;">' +
-                    '<input type="checkbox" class="screen-checkbox" data-id="' + s.id + '" data-name="' + s.name + '" data-last="' + s.lastBatchId + '" ' + isChecked + ' style="width:20px; height:20px;">' +
+                    '<input type="checkbox" class="screen-checkbox" data-id="' + s.id + '" data-name="' + s.name + '" data-last="' + (s.lastBatchId || '') + '" data-seen="' + (s.lastSeenAt || 0) + '" ' + isChecked + ' style="width:20px; height:20px;">' +
                     s.name +
                 '</label>' +
             '</div>' +
@@ -1382,14 +1392,8 @@ window.sendCommand = function(cmd) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const volSlider = document.getElementById('volSlider');
-    if (volSlider) {
-        volSlider.addEventListener('change', function(e) {
-            const val = e.target.value;
-            document.getElementById('volText').innerText = val + '%';
-            window.sendCommand('volume:' + (val / 100));
-        });
-    }
+    // Volume controls are now buttons that send vol_up and vol_down commands
+});
 });
 
 </script>
