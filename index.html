@@ -1328,19 +1328,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 </script>
-    <script>
-  // التأكد من أن المتصفح يدعم الـ Service Workers
+
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      // استدعاء ملف الـ sw.js
       navigator.serviceWorker.register('sw.js')
         .then(registration => {
-          console.log('تم تسجيل Service Worker بنجاح، النطاق هو:', registration.scope);
+          console.log('SW Registered successfully:', registration.scope);
         })
         .catch(error => {
-          console.error('فشل تسجيل Service Worker:', error);
+          console.error('SW Registration failed:', error);
         });
     });
   }
