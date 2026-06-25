@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedScreens.length === 1 && selectedScreens[0].lastBatchId) {
             const screen = selectedScreens[0];
             const overlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').innerText = `جلب محتوى ${screen.name}...`;
+            document.getElementById('loadingText').innerText = 'جلب محتوى ' + screen.name + '...';
             overlay.style.display = 'flex';
             
             db.collection("screen_content")
@@ -945,7 +945,7 @@ async function loadAdminData() {
     rList.innerHTML = '';
     sSnap.forEach(doc => {
         const name = doc.data().screenName || doc.id;
-        rList.innerHTML += `<label><input type="checkbox" class="admin-screen-cb" value="${doc.id}"> ${name}</label>`;
+        rList.innerHTML += '<label><input type="checkbox" class="admin-screen-cb" value="' + doc.id + '"> ' + name + '</label>';
     });
     
     const uList = document.getElementById('usersList');
@@ -955,10 +955,10 @@ async function loadAdminData() {
     uSnap.forEach(doc => {
         const d = doc.data();
         if(d.role === 'admin') return;
-        uList.innerHTML += `<div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <strong>${d.email}</strong> <span style="color:var(--accent-color); font-size:12px;">(${d.role})</span><br>
-            <span style="font-size: 12px; color: var(--text-secondary);">شاشات: ${d.screens ? d.screens.join(', ') : 'لا يوجد'}</span>
-        </div>`;
+        uList.innerHTML += '<div style="padding: 10px; border-bottom: 1px solid var(--border-color);">' +
+            '<strong>' + d.email + '</strong> <span style="color:var(--accent-color); font-size:12px;">(' + d.role + ')</span><br>' +
+            '<span style="font-size: 12px; color: var(--text-secondary);">شاشات: ' + (d.screens ? d.screens.join(', ') : 'لا يوجد') + '</span>' +
+        '</div>';
     });
 }
 
@@ -1020,15 +1020,14 @@ function renderScreensList() {
         div.style.flexDirection = 'column';
         div.style.gap = '8px';
         
-        div.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <label style="cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; font-size:16px;">
-                    <input type="checkbox" class="screen-checkbox" data-id="${s.id}" data-name="${s.name}" data-last="${s.lastBatchId}" ${isChecked} style="width:20px; height:20px;">
-                    ${s.name}
-                </label>
-            </div>
-            <div style="color: var(--accent-color); font-size: 14px; padding-right: 30px;">${s.lastContentText}</div>
-        `;
+        div.innerHTML = 
+            '<div style="display: flex; align-items: center; justify-content: space-between;">' +
+                '<label style="cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; font-size:16px;">' +
+                    '<input type="checkbox" class="screen-checkbox" data-id="' + s.id + '" data-name="' + s.name + '" data-last="' + s.lastBatchId + '" ' + isChecked + ' style="width:20px; height:20px;">' +
+                    s.name +
+                '</label>' +
+            '</div>' +
+            '<div style="color: var(--accent-color); font-size: 14px; padding-right: 30px;">' + s.lastContentText + '</div>';
         list.appendChild(div);
     });
 }
@@ -1067,8 +1066,8 @@ function refreshUI() {
         if (item.mediaType === 'url') {
             thumb.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>';
         }
-        else if (item.mediaType === 'image') thumb.innerHTML = `<img src="${item.url}">`;
-        else thumb.innerHTML = `<video src="${item.url}#t=1"></video>`; // t=1 for thumb
+        else if (item.mediaType === 'image') thumb.innerHTML = '<img src="' + item.url + '">';
+        else thumb.innerHTML = '<video src="' + item.url + '#t=1"></video>';
         
         const durOverlay = document.createElement('div');
         durOverlay.className = 'media-dur-overlay';
