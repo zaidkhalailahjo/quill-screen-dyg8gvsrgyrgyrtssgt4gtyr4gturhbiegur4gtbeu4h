@@ -1,6 +1,6 @@
 {
     "name": "تطبيق الإرسال Quill",
-    "short_name": "Quill Sender",
+    "short_name": "Quill ds",
     "description": "تطبيق ويب لإرسال الصور والفيديوهات والروابط إلى الشاشات والروبوتات الخاصة بك",
     "start_url": "index.html",
     "display": "standalone",
