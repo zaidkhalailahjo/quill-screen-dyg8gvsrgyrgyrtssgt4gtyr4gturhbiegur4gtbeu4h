@@ -1,26 +1,13 @@
-// Basic Service Worker
-const CACHE_NAME = 'ds-pwa-cache-v1';
-const urlsToCache = [
-  '/'
-];
+// sw.js
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
-  );
+self.addEventListener('install', (event) => {
+    console.log('Service Worker: تم التثبيت بنجاح');
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
+self.addEventListener('activate', (event) => {
+    console.log('Service Worker: تم التفعيل بنجاح');
+});
+
+self.addEventListener('fetch', (event) => {
+    // يمكنك لاحقاً إضافة أكواد التخزين المؤقت (Caching) هنا لدعم العمل بدون إنترنت
 });
