@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#070C10">
-<link rel="apple-touch-icon" href="https://uploads.onecompiler.io/44krdug5q/1781421056101/Quillbot.jpg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تطبيق الإرسال Quill</title>
@@ -220,13 +216,19 @@ body.light-theme #loginView {
 }
 
 /* Preview Area */
-.preview-area {
+.preview-container {
+    display: flex;
+    justify-content: center;
     width: 100%;
-    aspect-ratio: 16/9;
+}
+.preview-area {
+    width: 216px;
+    height: 384px;
     background-color: #000;
     position: relative;
     overflow: hidden;
     margin-bottom: 15px;
+    margin-top: 15px;
 }
 .media-box {
     position: absolute;
@@ -281,27 +283,38 @@ body.light-theme #loginView {
 .duration-value { color: white; font-weight: bold; }
 input[type=range] { width: 100%; accent-color: #00A878; }
 
-/* Media List */
+/* Media List (Horizontal Strip) */
+.media-list-wrapper {
+    width: 100%; overflow-x: auto; padding: 10px 0;
+}
 .media-list {
-    flex: 1; overflow-y: auto; padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px;
+    display: flex; flex-direction: row; gap: 8px; padding: 0 20px; width: max-content;
 }
 .media-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px;
-    background-color: #111A22; border-radius: 12px; border: 1px solid #1F2A35; cursor: pointer;
+    position: relative; width: 72px; height: 82px;
+    background-color: transparent; border-radius: 10px; border: 1px solid var(--border-color);
+    cursor: pointer; padding: 2px;
 }
-.media-item.active { border-color: #00A878; background-color: rgba(0, 168, 120, 0.1); }
+.media-item.active { border-color: #00A878; background-color: rgba(0, 168, 120, 0.2); }
 .media-thumb {
-    width: 60px; height: 60px; border-radius: 8px; background-color: #000;
+    width: 100%; height: 100%; border-radius: 8px; background-color: #000;
     display: flex; align-items: center; justify-content: center; overflow: hidden; color: #8899A6;
 }
 .media-thumb img, .media-thumb video { width: 100%; height: 100%; object-fit: cover; }
-.media-info { flex: 1; }
-.media-name { font-size: 14px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;}
-.media-type { font-size: 12px; color: #8899A6; }
-.media-actions button {
-    background: none; border: none; color: white; padding: 8px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+
+.media-dur-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 16px; background: rgba(0,0,0,0.7);
+    color: white; font-size: 10px; display: flex; align-items: center; justify-content: center;
+    border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
 }
+.media-actions { position: absolute; top: -5px; right: -5px; }
+.media-actions button {
+    background: rgba(180, 40, 40, 0.9); border: none; color: white;
+    width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; padding: 0;
+}
+.media-info { display: none; }
 .delete-btn { color: #E74C3C !important; }
 
 /* Modal & Loader */
@@ -464,18 +477,20 @@ input[type=range] { width: 100%; accent-color: #00A878; }
         </div>
 
         <!-- منطقة المعاينة وتعديل الأبعاد -->
-        <div class="preview-area" id="previewArea">
-            <div id="mediaBox" class="media-box" style="display: none;">
-                <img id="imagePreview" style="display: none;" draggable="false" />
-                <video id="videoPreview" loop muted style="display: none;"></video>
-                <div id="urlPreview" style="display: none;" class="url-placeholder">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                    رابط ويب
+        <div class="preview-container">
+            <div class="preview-area" id="previewArea">
+                <div id="mediaBox" class="media-box" style="display: none;">
+                    <img id="imagePreview" style="display: none;" draggable="false" />
+                    <video id="videoPreview" loop muted style="display: none;"></video>
+                    <div id="urlPreview" style="display: none;" class="url-placeholder">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        رابط ويب
+                    </div>
+                    <div class="resize-handle" id="resizeHandle"></div>
                 </div>
-                <div class="resize-handle" id="resizeHandle"></div>
-            </div>
-            <div id="emptyPreview" class="empty-preview">
-                لا توجد وسائط محددة
+                <div id="emptyPreview" class="empty-preview">
+                    لا توجد وسائط محددة
+                </div>
             </div>
         </div>
 
@@ -495,10 +510,6 @@ input[type=range] { width: 100%; accent-color: #00A878; }
             </button>
             <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;" multiple>
             
-            
-            
-            
-
             <button id="sendBtn" class="send-btn" style="flex: 1; min-width: 150px;">
                 إرسال للشاشة
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; vertical-align:middle;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -506,8 +517,10 @@ input[type=range] { width: 100%; accent-color: #00A878; }
         </div>
 
         <!-- قائمة الوسائط المحددة -->
-        <div class="media-list" id="mediaList">
-            <!-- سيتم إضافة العناصر هنا عبر الجافاسكريبت -->
+        <div class="media-list-wrapper">
+            <div class="media-list" id="mediaList">
+                <!-- سيتم إضافة العناصر هنا عبر الجافاسكريبت -->
+            </div>
         </div>
 
         <!-- طبقة التحميل -->
@@ -688,12 +701,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('refreshScreensBtn').onclick = loadScreens;
-    
     document.getElementById('addMediaBtn').onclick = () => document.getElementById('fileInput').click();
     document.getElementById('fileInput').onchange = handleFileSelect;
-    
-    
     
     document.getElementById('sendBtn').onclick = sendToScreens;
     
@@ -716,6 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
         screensModal.style.display = 'flex';
         renderScreensList();
     };
+
     document.getElementById('saveScreensBtn').onclick = () => {
         screensModal.style.display = 'none';
         // Extract selected
@@ -729,8 +739,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedScreens.push({ id: sid, name: sname, lastBatchId: slast });
             }
         });
+        updateSelectedRobotsText();
+        
+        // Fetch last content if only 1 screen selected
+        if (selectedScreens.length === 1 && selectedScreens[0].lastBatchId) {
+            const screen = selectedScreens[0];
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingText').innerText = `جلب محتوى ${screen.name}...`;
+            overlay.style.display = 'flex';
+            
+            db.collection("screen_content")
+              .where("screenId", "==", screen.id)
+              .where("batchId", "==", screen.lastBatchId)
+              .orderBy("batchOrder", "asc")
+              .get()
+              .then(async snap => {
+                  if(!snap.empty) {
+                      selectedMedia = [];
+                      for (let doc of snap.docs) {
+                          const d = doc.data();
+                          const mt = d.mediaType;
+                          let url = "";
+                          if (mt === 'url') url = d.url;
+                          else if (d.storagePath) {
+                              try { url = await storage.ref(d.storagePath).getDownloadURL(); } catch(e){}
+                          }
+                          selectedMedia.push({
+                              file: null,
+                              name: d.originalFileName || "ملف من الشاشة",
+                              mimeType: mt === 'video' ? 'video/mp4' : (mt === 'url' ? 'url' : 'image/jpeg'),
+                              mediaType: mt,
+                              durationSeconds: d.durationSeconds || 15,
+                              url: url,
+                              existingStoragePath: d.storagePath,
+                              layoutX: d.layoutX || 0, layoutY: d.layoutY || 0, layoutW: d.layoutW || 1, layoutH: d.layoutH || 1
+                          });
+                      }
+                      selectedMediaIndex = 0;
+                      refreshUI();
+                  }
+                  overlay.style.display = 'none';
+              }).catch(e => {
+                  console.error(e);
+                  overlay.style.display = 'none';
+              });
+        }
     };
-    
+
     document.getElementById('menuRemoteBtn').onclick = () => {
         document.getElementById('sideMenu').classList.remove('open');
         remoteModal.style.display = 'flex';
@@ -791,16 +846,12 @@ function setupAuthAndMenu() {
                 currentUserDoc = doc.data();
                 if (currentUserDoc.role === 'admin') {
                     document.getElementById('menuAdminBtn').style.display = 'block';
-                    
-                    
                 }
             } else {
                 // أول مستخدم يدخل سيكون الأدمن
                 currentUserDoc = { role: 'admin', email: user.email, screens: [] };
                 await db.collection('users').doc(user.uid).set(currentUserDoc);
                 document.getElementById('menuAdminBtn').style.display = 'block';
-                
-                
             }
             loadScreens();
         } else {
@@ -885,10 +936,6 @@ document.getElementById('menuThemeBtn').onclick = () => {
             msg.style.color = '#ff4d4d'; msg.innerText = "خطأ: " + e.message;
         }
     };
-    
-    // أزرار التجميد
-    
-    
 }
 
 async function loadAdminData() {
@@ -1005,26 +1052,6 @@ function handleFileSelect(e) {
     e.target.value = ''; // Reset
 }
 
-function handleAddUrl() {
-    let url = document.getElementById('urlInput').value.trim();
-    if(url) {
-        if(!url.startsWith('http')) url = 'https://' + url;
-        selectedMedia.push({
-            file: null,
-            name: "رابط ويب",
-            mimeType: "text/html",
-            mediaType: "url",
-            durationSeconds: 15,
-            url: url,
-            layoutX: 0.0, layoutY: 0.0, layoutW: 1.0, layoutH: 1.0
-        });
-        selectedMediaIndex = selectedMedia.length - 1;
-        document.getElementById('urlModal').style.display = 'none';
-        document.getElementById('urlInput').value = '';
-        refreshUI();
-    }
-}
-
 function refreshUI() {
     mediaList.innerHTML = '';
     selectedMedia.forEach((item, index) => {
@@ -1043,15 +1070,14 @@ function refreshUI() {
         else if (item.mediaType === 'image') thumb.innerHTML = `<img src="${item.url}">`;
         else thumb.innerHTML = `<video src="${item.url}#t=1"></video>`; // t=1 for thumb
         
-        const info = document.createElement('div');
-        info.className = 'media-info';
-        info.innerHTML = `<div class="media-name">${item.name}</div><div class="media-type">${item.mediaType === 'url' ? 'رابط ويب' : (item.mediaType==='image'?'صورة':'فيديو')}</div>`;
+        const durOverlay = document.createElement('div');
+        durOverlay.className = 'media-dur-overlay';
+        durOverlay.innerText = item.durationSeconds + 's';
         
         const actions = document.createElement('div');
         actions.className = 'media-actions';
         const delBtn = document.createElement('button');
-        delBtn.className = 'delete-btn';
-        delBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+        delBtn.innerHTML = '×';
         delBtn.onclick = (e) => {
             e.stopPropagation();
             selectedMedia.splice(index, 1);
@@ -1061,7 +1087,7 @@ function refreshUI() {
         actions.appendChild(delBtn);
         
         div.appendChild(thumb);
-        div.appendChild(info);
+        div.appendChild(durOverlay);
         div.appendChild(actions);
         mediaList.appendChild(div);
     });
@@ -1261,6 +1287,23 @@ async function sendToScreens() {
                         layoutW: item.layoutW, layoutH: item.layoutH,
                         url: item.url
                     });
+                } else if (item.existingStoragePath) {
+                    await db.collection("screen_content").doc(cid).set({
+                        screenId: s.id,
+                        storagePath: item.existingStoragePath,
+                        mediaType: item.mediaType,
+                        senderName: deviceName,
+                        status: "pending",
+                        originalFileName: item.name,
+                        durationSeconds: item.durationSeconds,
+                        batchId: batchId,
+                        batchOrder: i,
+                        batchTotal: batchTotal,
+                        replacePlaylist: true,
+                        createdAtDeviceTime: Date.now(),
+                        layoutX: item.layoutX, layoutY: item.layoutY,
+                        layoutW: item.layoutW, layoutH: item.layoutH
+                    });
                 } else {
                     // Upload file
                     const ext = item.name.split('.').pop();
@@ -1328,21 +1371,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-</script>
 
-<!-- الكود الخاص بتسجيل Service Worker -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(registration => {
-          console.log('SW Registered successfully:', registration.scope);
-        })
-        .catch(error => {
-          console.error('SW Registration failed:', error);
-        });
-    });
-  }
 </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
