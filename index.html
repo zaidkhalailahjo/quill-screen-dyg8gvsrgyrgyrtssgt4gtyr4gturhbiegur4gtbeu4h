@@ -804,6 +804,11 @@ function applyTheme() {
     else document.body.classList.add('light-theme');
 }
 
+function updateThemeBtnText() {
+    const btn = document.getElementById('menuThemeBtn');
+    if(btn) btn.innerText = isDarkMode ? "☀️ الوضع النهاري" : "🌙 الوضع الليلي";
+}
+
 // ================== نظام المصادقة والإدارة ==================
 function setupAuthAndMenu() {
     const loginView = document.getElementById('loginView');
@@ -871,11 +876,7 @@ function setupAuthAndMenu() {
             sideMenu.classList.remove('open'); 
         }
     };
-    function updateThemeBtnText() {
-    const btn = document.getElementById('menuThemeBtn');
-    if(btn) btn.innerText = isDarkMode ? "☀️ الوضع النهاري" : "🌙 الوضع الليلي";
-}
-document.getElementById('menuThemeBtn').onclick = () => {
+    document.getElementById('menuThemeBtn').onclick = () => {
         isDarkMode = !isDarkMode;
         localStorage.setItem('isDarkMode', isDarkMode);
         applyTheme(); updateThemeBtnText();
