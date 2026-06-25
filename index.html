@@ -915,26 +915,31 @@ async function loadAdminData() {
 
 function loadScreens() {
     if(!currentUserDoc) return;
-    db.collection('screens').onSnapshot(async snap => {
+    db.collection('screens').onSnapshot(snap => {
         screens = [];
         for (let doc of snap.docs) {
             const sid = doc.id;
-            const name = doc.data().screenName || sid;
+            const data = doc.data();
+            const name = data.screenName || sid;
             if (currentUserDoc && currentUserDoc.role !== 'admin' && currentUserDoc.role !== 'user') {
                 if (!currentUserDoc.screens || !currentUserDoc.screens.includes(sid)) continue;
             }
             
-            let lastBatchId = null;
-            let lastContentText = "فارغ";
-            const cSnap = await db.collection("screen_content").where("screenId", "==", sid).orderBy("createdAtDeviceTime", "desc").limit(1).get().catch(e => {
-                return db.collection("screen_content").where("screenId", "==", sid).limit(1).get();
-            });
-            if (!cSnap.empty) {
-                const cDoc = cSnap.docs[0].data();
-                lastBatchId = cDoc.batchId;
-                const mt = cDoc.mediaType;
-                const fname = cDoc.originalFileName || "غير معروف";
-                lastContentText = "يعرض الآن: " + (mt === "video" ? "🎬" : "🖼️") + " " + fname;
+            let lastBatchId = data.lastBatchId || null;
+            let mt = data.lastMediaType || "";
+            let fname = data.lastFileName || "محتوى";
+            let sender = data.lastSenderName || "مجهول";
+            
+            let lastSeenAt = data.lastSeenAt ? data.lastSeenAt.toMillis() : 0;
+            let isOnline = (Date.now() - lastSeenAt) < 120000;
+            let statusDot = isOnline ? "🟢" : "🔴";
+            let icon = mt === "video" ? "🎬" : (mt === "image" ? "🖼️" : (mt === "url" ? "🌐" : "📄"));
+            
+            let lastContentText = "";
+            if (lastBatchId) {
+                lastContentText = statusDot + " " + icon + " " + fname + " - مِن: " + sender;
+            } else {
+                lastContentText = statusDot + " فارغ";
             }
             screens.push({ id: sid, name: name, lastBatchId: lastBatchId, lastContentText: lastContentText });
         }
