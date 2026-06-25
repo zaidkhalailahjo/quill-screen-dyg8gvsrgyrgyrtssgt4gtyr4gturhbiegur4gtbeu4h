@@ -1213,8 +1213,7 @@ async function sendToScreens() {
         const firstBatch = selectedScreens[0].lastBatchId;
         const mismatch = selectedScreens.some(s => s.lastBatchId !== firstBatch);
         if (mismatch) {
-            const ok = confirm("الشاشات المحددة تعرض حالياً محتويات مختلفة عن بعضها.
-هل أنت متأكد أنك تريد إرسال هذا المحتوى واستبدال كل ما يعرضونه؟");
+            const ok = confirm("الشاشات المحددة تعرض حالياً محتويات مختلفة عن بعضها.\nهل أنت متأكد أنك تريد إرسال هذا المحتوى واستبدال كل ما يعرضونه؟");
             if (!ok) return;
         }
     }
