@@ -613,6 +613,7 @@ const secondaryAuth = secondaryApp.auth();
 let currentUserDoc = null;
 let screens = [];
 let selectedScreens = [];
+let screensModalMode = 'select';
 let selectedMedia = [];
 let selectedMediaIndex = -1;
 let deviceName = localStorage.getItem('deviceName') || "Web App";
@@ -704,7 +705,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addMediaBtn').onclick = () => document.getElementById('fileInput').click();
     document.getElementById('fileInput').onchange = handleFileSelect;
     
-    document.getElementById('sendBtn').onclick = sendToScreens;
+    document.getElementById('sendBtn').onclick = () => {
+        if (selectedMedia.length === 0) {
+            alert("الرجاء إضافة محتوى أولاً");
+            return;
+        }
+        screensModalMode = 'send';
+        document.getElementById('saveScreensBtn').innerText = "تأكيد الإرسال";
+        document.getElementById('screensModal').style.display = 'flex';
+        renderScreensList();
+    };
     
     durationSlider.oninput = (e) => {
         durationLabel.innerText = e.target.value + 's';
@@ -721,6 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const remoteModal = document.getElementById('remoteModal');
     
     document.getElementById('menuScreensBtn').onclick = () => {
+        screensModalMode = 'select';
+        document.getElementById('saveScreensBtn').innerText = "اختيار وعرض المحتوى";
         document.getElementById('sideMenu').classList.remove('open');
         screensModal.style.display = 'flex';
         renderScreensList();
@@ -741,48 +753,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         updateSelectedRobotsText();
         
-        // Fetch last content if only 1 screen selected
-        if (selectedScreens.length === 1 && selectedScreens[0].lastBatchId) {
-            const screen = selectedScreens[0];
-            const overlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').innerText = 'جلب محتوى ' + screen.name + '...';
-            overlay.style.display = 'flex';
-            
-            db.collection("screen_content")
-              .where("screenId", "==", screen.id)
-              .where("batchId", "==", screen.lastBatchId)
-              .orderBy("batchOrder", "asc")
-              .get()
-              .then(async snap => {
-                  if(!snap.empty) {
-                      selectedMedia = [];
-                      for (let doc of snap.docs) {
-                          const d = doc.data();
-                          const mt = d.mediaType;
-                          let url = "";
-                          if (mt === 'url') url = d.url;
-                          else if (d.storagePath) {
-                              try { url = await storage.ref(d.storagePath).getDownloadURL(); } catch(e){}
+        if (screensModalMode === 'select') {
+            // Fetch last content if only 1 screen selected
+            if (selectedScreens.length === 1 && selectedScreens[0].lastBatchId) {
+                const screen = selectedScreens[0];
+                const overlay = document.getElementById('loadingOverlay');
+                document.getElementById('loadingText').innerText = 'جلب محتوى ' + screen.name + '...';
+                overlay.style.display = 'flex';
+                
+                db.collection("screen_content")
+                  .where("screenId", "==", screen.id)
+                  .where("batchId", "==", screen.lastBatchId)
+                  .orderBy("batchOrder", "asc")
+                  .get()
+                  .then(async snap => {
+                      if(!snap.empty) {
+                          selectedMedia = [];
+                          for (let doc of snap.docs) {
+                              const d = doc.data();
+                              const mt = d.mediaType;
+                              let url = "";
+                              if (mt === 'url') url = d.url;
+                              else if (d.storagePath) {
+                                  try { url = await storage.ref(d.storagePath).getDownloadURL(); } catch(e){}
+                              }
+                              selectedMedia.push({
+                                  file: null,
+                                  name: d.originalFileName || "ملف من الشاشة",
+                                  mimeType: mt === 'video' ? 'video/mp4' : (mt === 'url' ? 'url' : 'image/jpeg'),
+                                  mediaType: mt,
+                                  durationSeconds: d.durationSeconds || 15,
+                                  url: url,
+                                  existingStoragePath: d.storagePath,
+                                  layoutX: d.layoutX || 0, layoutY: d.layoutY || 0, layoutW: d.layoutW || 1, layoutH: d.layoutH || 1
+                              });
                           }
-                          selectedMedia.push({
-                              file: null,
-                              name: d.originalFileName || "ملف من الشاشة",
-                              mimeType: mt === 'video' ? 'video/mp4' : (mt === 'url' ? 'url' : 'image/jpeg'),
-                              mediaType: mt,
-                              durationSeconds: d.durationSeconds || 15,
-                              url: url,
-                              existingStoragePath: d.storagePath,
-                              layoutX: d.layoutX || 0, layoutY: d.layoutY || 0, layoutW: d.layoutW || 1, layoutH: d.layoutH || 1
-                          });
+                          selectedMediaIndex = 0;
+                          refreshUI();
                       }
-                      selectedMediaIndex = 0;
-                      refreshUI();
-                  }
-                  overlay.style.display = 'none';
-              }).catch(e => {
-                  console.error(e);
-                  overlay.style.display = 'none';
-              });
+                      overlay.style.display = 'none';
+                  }).catch(e => {
+                      console.error(e);
+                      overlay.style.display = 'none';
+                  });
+            }
+        } else if (screensModalMode === 'send') {
+            if (selectedScreens.length === 0) {
+                alert("الرجاء اختيار شاشة واحدة على الأقل!");
+                return;
+            }
+            sendToScreens();
         }
     };
 
