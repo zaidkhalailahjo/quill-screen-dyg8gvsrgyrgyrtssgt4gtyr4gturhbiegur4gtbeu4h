@@ -1,31 +1,13 @@
-// sw.js - الحل النهائي
-const CACHE_NAME = 'ds-pwa-cache-v2'; // تم رفع النسخة لتحديث الكاش
-const urlsToCache = [
-  '/'
-];
-
+// Service Worker - Network Only (No Caching)
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
-  );
-  self.skipWaiting(); // لتفعيل النسخة الجديدة فوراً
+  self.skipWaiting(); // تفعيل فوراً
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(clients.claim()); // تطبيق على كل الصفحات
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
+  // جلب البيانات دائماً من الإنترنت مباشرة بدون استخدام الكاش
+  event.respondWith(fetch(event.request));
 });
