@@ -1331,14 +1331,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
     <script>
-        // تم تهميش كود الـ Service Worker مؤقتاً كتعليق لتجنب الخطأ
-/*
-if ('serviceWorker' in navigator) {
+  // التأكد من أن المتصفح يدعم الـ Service Workers
+  if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+      // استدعاء ملف الـ sw.js
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => {
+          console.log('تم تسجيل Service Worker بنجاح، النطاق هو:', registration.scope);
+        })
+        .catch(error => {
+          console.error('فشل تسجيل Service Worker:', error);
+        });
     });
-}
-*/
-    </script>
+  }
+</script>
 </body>
 </html>
